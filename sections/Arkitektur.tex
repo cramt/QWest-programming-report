@@ -69,13 +69,18 @@ Som nævnt, så bruger man services til at håndtere kommunikation mellem de for
 
 I QWest er der følgende services:
 \begin{itemize}\label{services}
-    \item QWest.Admin
     \item QWest.Api
     \item QWest.Email
     \item QWest.Web
 \end{itemize}
 
-QWest.Admin og QWest.Api er henholdsvis administrator adgang og bruger adgang. QWest.Admin åbner Desktop applikationen, hvor hvert land kan opdateres manuelt. Det skulle så være muligt hvert år at opdatere informationerne på hvert land én gang om året. QWest.Admin benytter sig ikke af Web og Email servicen, da det i dette projekt er vurderet, at det ikke er nødvendigt med front-end til administration. 
+Og De følgende klienter
+\begin{itemize}\label{services}
+    \item QWest.Admin
+    \item QWest.Web frontend
+\end{itemize}
+
+QWest.Admin og QWest.Api frontend er henholdsvis administrator adgang og bruger adgang. QWest.Admin åbner Desktop applikationen, hvor hvert land kan opdateres manuelt. Det skulle så være muligt hvert år at opdatere informationerne på hvert land én gang om året. QWest.Admin benytter sig ikke af Web og Email servicen, da det i dette projekt er vurderet, at det ikke er nødvendigt med front-end til administration. 
 
 \begin{figure}
     \includegraphics[width=\linewidth]{admin_panel.png}
@@ -83,14 +88,15 @@ QWest.Admin og QWest.Api er henholdsvis administrator adgang og bruger adgang. Q
     \label{fig:admin_panel}
 \end{figure}
 
-QWest.Api kommunikerer med QWest.Web og QWest.Email. QWest.Email håndterer udsendelse af email til brugeren, såfremt brugeren har bedt om at få sit password nulstillet. QWest.Web er ansvarlig for kommunikation mellem hjemmesiden, model og databasen (gennem QWest.DataAccess).
+QWest.Web frontend er brugens klient og en html frontend generet i QWest.Web til at blive vist i en browser, QWest.Web frontend kommunikere med vores REST service QWest.Api gennem QWest.Web some fungurere some en proxy der sender http request'er der started med \texttt{/api/} til QWest.Api, QWest.Email er et service dedikeret til at sende emails til brugerer, lige nu er QWest.Email utrolig lile, omrking 50 linjer og det kunne meget nemt argumenteres for at det skulle være en del af QWest.Api, dette var originalt planen, men der existere ikke nogen "out-of-the-box" biblioteker som ikke kræver at en smtp server for c\#, kun node.js, og denne realitet redusere vores muligheder til at sætte op in stmp server eller bare lave email til et seperat service skrevet i node.js
 
 
 \section{RESTful Web API}\label{sec:REST}
-% Data formats
-% Are we working with (SOAP)XML or JSON? 
-% WSDL?
-% Why chose one over the other; what did you do?
+Vores REST API, QWest.Api, er et service for sig selv, hvis premære job er at håntere logikken for brugerens interaktion med platformens persistente data, den gør ting some at vi er sikker på at vores data giver mening i forhold til vores domæne (fx at vi ikke oprætter en gruppe, uden nogen personer i gruppen) og checker om brugeren er authentikeret.
+
+QWest.Api bruger frameworket ASP.NET framework Web Api, sammen med Owin for middleware og Json.NET til serializering og deserializering a JSON data.
+
+QWest.Api bruger JSON som representation metoden, dette gøres eftersom at JSON er en af de mest populære måder af serializere data, ud over det er JSON både læseligt for mennesker sammentidig med at bruge mindre plads end andre menneskelæselig alternativer som XML. JSON er også bygget ind i javascript, hvilket gør det et næmt valg dag vores primære bruger af dette API kommer til at være QWest.Web frontend som er 100\% javascript at det skal køre i en browser
 
 \section{Desktop Programming}\label{sec:deskProgramming}
 % This is the QWest.Admin stuff
