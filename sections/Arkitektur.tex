@@ -55,8 +55,19 @@ Hvert lag tjener sit eget formål ift. resten af programmet.
 For at gennemføre dette er der blevet brugt en 3-lags arkitektur, som indeholder et præsentationslag, logik lag, og data lag. 
 
 \begin{figure}
+    \includegraphics[width=\linewidth]{architecture.png}
+    \caption{QWest arkitektur model.}
+    \label{fig:architecture_model}
+\end{figure}
+
+i arkitektur modellen~\ref{fig:architecture_model} beskriver ellipserne klienter, servicer, library projecter eller lignende, blå værende frontend html/css/js, rød værende node.js og grøn værende c\#. 
+De stiplede linjer beskriver interprocess kommunikation, i dette diagram er det altid http forespørgsler eller forespørgsler til databasen.
+De fuldt optrukket linjer between intraprocess kommunikation, oftest når et runtime af en art henter kode ind fra et andet del af projected, fx QWest.Api dll'en som henter ind QWest.DataAccess dll'en.
+Ud over dette er modellen også delt op i 2 dele, "trusted enviroment" og "untrusted enviroment", i vores trusted enviroment kan vi stole på at den forespørgsler vi modtager kommer fra os self og vi behøver ikke tænke på ting som sikkerhed of authentikation, "untrusted enviroment" er hvor bruger input kommer fra og det kan være alt fra SQL injection angreb til helt normalt bruger input.
+
+\begin{figure}
     \includegraphics[width=\linewidth]{domain_model.png}
-    \caption{QWest domænemodel for databasen.}
+    \caption{QWest domænemodel.}
     \label{fig:domain_model}
 \end{figure}
 
