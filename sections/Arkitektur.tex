@@ -38,8 +38,8 @@ Fremgangsmåden i projektet har været bottom-up, forstået på den måde, at r�
 \begin{itemize}\label{procedure}
     \item Database-struktur design (relationel model)
     \item Oprettelse af database tabel(ler)
-    \item Design af model (C#)
-    \item Oprettelse af model (C#)
+    \item Design af model (C\#)
+    \item Oprettelse af model (C\#)
     \item Oprettelse af DAO
     \item Oprettelse af Controller
     \item Gennemførsel af tests
@@ -104,8 +104,8 @@ Databasen til projektet er oprettet med MSSQL\cite{MSSQL}. Til trods for at der 
     \label{fig:relational_model}
 \end{figure}
 
-\texttt{users} er omdrejningspunktet i databasen, da \texttt{users} er forbundet med \texttt{progress_maps}, \texttt{posts}, \texttt{password_reset_tokens}, \texttt{users_friendships}, \texttt{users_friendship_requests} og \texttt{users_groups}. Disse forbinder så til resten af tabellerne, hvor \texttt{posts} har \texttt{posts_images}, som har \texttt{images}. \texttt{progress_maps} er forbundet med \texttt{geopolitical_location}, gennem \texttt{progress_maps_locations}. \texttt{groups} er forbundet gennem \texttt{users_groups}. 
-I domæne modellen, figur \ref{fig:domain_model}, ses forholdene mellem klasserne, som er belæg for de forskellige sammenkoblinger af tabellerne så modellerne afspejler hinanden. Databasen opfylder ikke samtlige krav til BCNF\cite{bcnf}. \texttt{name} på \texttt{geopolitical_locations} og manglen på en seperat \texttt{subregions} tabel til \texttt{geopolitical_location}. \texttt{name} er ikke atomisk, og kan indeholde flere navne på det samme land. Dette skyldes at lande som regel har flere officielle navne. Eksempelvis kan Storbrittanien hedde "United Kingdom", "Storbrittanien" og "UK", men stadig være det samme på alle andre områder. Såfremt et land har flere officielle navne, så lagres de i ét felt da det beskriver den samme tuple.
+\texttt{users} er omdrejningspunktet i databasen, da \texttt{users} er forbundet med \texttt{progress\_maps}, \texttt{posts}, \texttt{password\_reset\_tokens}, \texttt{users\_friendships}, \texttt{users\_friendship\_requests} og \texttt{users\_groups}. Disse forbinder så til resten af tabellerne, hvor \texttt{posts} har \texttt{posts\_images}, som har \texttt{images}. \texttt{progress\_maps} er forbundet med \texttt{geopolitical\_location}, gennem \texttt{progress\_maps\_locations}. \texttt{groups} er forbundet gennem \texttt{users\_groups}. 
+I domæne modellen, figur \ref{fig:domain_model}, ses forholdene mellem klasserne, som er belæg for de forskellige sammenkoblinger af tabellerne så modellerne afspejler hinanden. Databasen opfylder ikke samtlige krav til BCNF\cite{bcnf}. \texttt{name} på \texttt{geopolitical\_locations} og manglen på en seperat \texttt{subregions} tabel til \texttt{geopolitical\_location}. \texttt{name} er ikke atomisk, og kan indeholde flere navne på det samme land. Dette skyldes at lande som regel har flere officielle navne. Eksempelvis kan Storbrittanien hedde "United Kingdom", "Storbrittanien" og "UK", men stadig være det samme på alle andre områder. Såfremt et land har flere officielle navne, så lagres de i ét felt da det beskriver den samme tuple.
 
 %This is probably more important in Implementation than architecture
 \section{Web design}\label{sec:webdesign}
