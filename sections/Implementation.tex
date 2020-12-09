@@ -12,6 +12,152 @@
 % Performance
 \chapter{Implementation}\label{ch:implementation}
 
+\section{Database og persistence}\label{sec:database}
+
+\subsection{SQL og DAO}\label{sec:sqlOgDao}
+Eftersom bruger at vi bruger ADO.NET direkte uden nogen form for ORM eller lignende, betyder det at vi skal skrive vores egen SQL og DAO metoder, måden dette er implementeret på er DAO interfaces og statiske properties som vær returnerer den tilsvarende interface, disse interfaces der beskriver de metoder vi forventer en specific DAO metode at have og ligesom andre c\# interfaces er dette uafhængigt af den faktuelle logik der implementeret.
+Denne metode har 2 primærer fordelle, vi kan næmt lave mocking klasser af vores DAO klasser some andre klasser vil accepter som DAO klasser i et unit testing miljø, et eksempel på dette kan sees i \texttt{ImageControllerSpec} \ref{lst:imageControllerSpec}.
+Den sekundærer fordel er utrolig lav kobling mellem logikken i vores DAO metoder og resten af koden, dette kan være en kæmpe fordel hvis at Microsoft SQL et tidspunkt i fremtiden blev deprecated, og vi skal skifte database til mysql fx ville det ikke være svært at implementere dette eftersom at alt kode der kalder DAO metoder kalder dem gennem interfaces, dette vil sige at alle ændrer i koden vil kun ske i QWest.DataAccess, et eksempel på en DAO interface med tilsvarende property kan findes i \texttt{QWest.DataAccess.DAO.IProgressMap} \ref{lst:progressMapDaoInterface}.
+lige nu bruger koden en Microsoft SQL database så derfor er property'en defaulted til Mssql implementationen af interfacen
+
+\begin{listing}[p]
+    \begin{minted}
+    [
+        frame=lines,
+        framesep=2mm,
+        baselinestretch=1.2,
+        bgcolor=LightGray,
+        fontsize=\footnotesize,
+        linenos,
+        breaklines
+    ]{csharp}
+namespace QWest.Api.Tests {
+    [TestFixture]
+    public class ImageControllerSpec {
+        public class ImageRepoMock : DAO.IImage {
+            public Dictionary<int, byte[]> ImageDictionary { get; set; }
+            public Task<byte[]> Get(int id) {
+                return Task.FromResult(ImageDictionary[id]);
+            }
+        }
+        [Test]
+        public async Task NullReturnsValidImage() {
+            ImageController imageController = new ImageController();
+            imageController.ImageRepo = new ImageRepoMock();
+            byte[] bytes = await (await imageController.Get(null)).Content.ReadAsByteArrayAsync();
+            Assert.IsNotEmpty(bytes);
+        }
+        [Test]
+        public async Task ReturnsCorrectImage() {
+            byte[] expected = new byte[] { 1, 2, 3 };
+            ImageController imageController = new ImageController();
+            imageController.ImageRepo = new ImageRepoMock {
+                ImageDictionary = new Dictionary<int, byte[]> {
+                    {5, expected }
+                }
+            };
+            byte[] bytes = await (await imageController.Get(5)).Content.ReadAsByteArrayAsync();
+            Assert.AreEqual(expected, bytes);
+        }
+    }
+}
+\end{minted}
+    \caption{QWest.Api.Tests.ImageControllerSpec\label{lst:imageControllerSpec}}
+\end{listing}
+
+\begin{listing}[p]
+    \begin{minted}
+    [
+        frame=lines,
+        framesep=2mm,
+        baselinestretch=1.2,
+        bgcolor=LightGray,
+        fontsize=\footnotesize,
+        linenos,
+        breaklines
+    ]{csharp}
+namespace QWest.DataAccess {
+    public static partial class DAO {
+        public interface IProgressMap {
+            Task<ProgressMap> Get(User user);
+            Task<ProgressMap> Get(ProgressMap map);
+            Task<ProgressMap> Get(int id);
+            Task<ProgressMap> GetByUserId(int userId);
+            Task Update(int id, List<int> additions, List<int> subtractions);
+            Task Update(ProgressMap map);
+        }
+        public static IProgressMap ProgressMap { get; set; } = new Mssql.ProgressMapImpl(ConnectionWrapper.Instance);
+    }
+}
+\end{minted}
+    \caption{ProgressMap DAO interface\label{lst:progressMapDaoInterface}}
+\end{listing}
+
+\subsubsection{DbRep pattern}\label{sec:dbRep}
+DbRep, en forkortelse for Database Representation, er en pattern vi har "opfundet" og bruger i mange af vores DAO metoder, DbRep er en god pattern til at stoppe kode duplikation når det kommer til \texttt{select} DAO metoder.
+Alt i alt består denne pattern af at lave en klasse som reflekterer resultated af en select metode, DbRep klassens constructor tager imod en individuel row, i c\# vi dette være i form a en \texttt{SqlDataReader}, og udpakker vært row til en property in denne klasse, klassen skal representere select resultated og constructoren skal udpakke resultated til properties i denne klasse.
+Ind til videre hjælper denne klasse med ikke at duplikere koden for udpakningen af sql resultater, men vi kan også lave en metode på klassen, ofte kaldet \texttt{ToModel} som returnerer den model klasse some vores DAO interface kræver at vi returnerer.
+Denne pattern kan gøre DAO metode skrivning nemerer eftersom udpakningen og konstruktionen af den model klassen der skal returneres allerede eksistere og vær DAO metode kan fokuseser på SQL'en.
+En anden god fordel er at den splitter udpakning af data og mutering af data i two forskellige metoder, dette er vigtigt eftersom at vi gerne vil bruge så lidt tid so muligt med sql forbindelsen åben og det er kun udpakningen af data der kræver dette.
+Et eksempel på en DbRep er PostDbRep \ref{lst:postDbRep}, constructoren's job er at udpakke værdierne og den gør intet andet, eftersom der er en sql forbindelse åben, data mutationen sker i ToModel, hvor vi først skal finde ud af om denne Post var lavet af en User eller en Group, der er komma seperarede strenge og json der skal parses, alt sammen ting som ikke burde gøres mens der er en utrolig dyr sql forbindelse åben.
+
+\begin{listing}[p]
+    \begin{minted}
+    [
+        frame=lines,
+        framesep=2mm,
+        baselinestretch=1.2,
+        bgcolor=LightGray,
+        fontsize=\footnotesize,
+        linenos,
+        breaklines
+    ]{csharp}
+[Serializable]
+internal class PostDbRep : IDbRep<Post> {
+    //deleted properties for readability in this snippet
+    public PostDbRep(SqlDataReader reader) {
+        int i = 0;
+        Id = reader.GetSqlInt32(i++).Value;
+        Content = reader.GetSqlString(i++).Value;
+        UserId = reader.GetSqlInt32(i++).NullableValue();
+        GroupId = reader.GetSqlInt32(i++).NullableValue();
+        PostTime = reader.GetSqlInt32(i++).Value;
+        Location = reader.GetSqlString(i++).NullableValue();
+        Username = reader.GetSqlString(i++).NullableValue();
+        PasswordHash = reader.GetSqlBinary(i++).NullableValue();
+        Email = reader.GetSqlString(i++).NullableValue();
+        UserDescription = reader.GetSqlString(i++).NullableValue();
+        SessionCookie = reader.GetSqlBinary(i++).NullableValue();
+        ProfilePicture = reader.GetSqlInt32(i++).NullableValue();
+        Name = reader.GetSqlString(i++).NullableValue();
+        CreationTime = reader.GetSqlInt32(i++).NullableValue();
+        GroupDescription = reader.GetSqlString(i++).NullableValue();
+        Images = reader.GetSqlString(i++).NullableValue();
+        Members = reader.GetSqlString(i++).NullableValue();
+    }
+
+    public Post ToModel() {
+        User userAuthor = null;
+        Group groupAuthor = null;
+        if (UserId != null) {
+            userAuthor = new User(Username, PasswordHash, Email, UserDescription, SessionCookie, UserId) {
+                ProfilePicture = ProfilePicture
+            };
+        }
+        else if (GroupId != null) {
+            groupAuthor = new Group(Name, (int)CreationTime, GroupDescription, null, Members.MapValue(UserDbRep.FromJson).Select(x => x.ToModel()), GroupId);
+        }
+        else {
+            throw new ArgumentException("in this post the author is neither a user or group");
+        }
+        return new Post(Content, userAuthor, groupAuthor, PostTime, Images.MapValue(x => x.Split(',').Select(y => int.Parse(y)).ToList()), Location.MapValue(x => GeopoliticalLocationDbRep.ToTreeStructureFirst(GeopoliticalLocationDbRep.FromJson(x))), Id);
+    }
+}
+\end{minted}
+    \caption{PostDbRep\label{lst:postDbRep}}
+\end{listing}
+
+\subsection{Migration og backups}\label{sec:migration}
 
 \section{Services}\label{sec:servicesImp}
 
