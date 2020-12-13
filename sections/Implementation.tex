@@ -158,6 +158,16 @@ internal class PostDbRep : IDbRep<Post> {
 \end{listing}
 
 \subsection{Migration og backups}\label{sec:migration}
+QWest bruger database migration pattern'en til database ændringer.
+Database migration betyder at i stedet for at have et færdiggjord og definitivt sql script til at sætte databasen op, så er der mange sql scripts, i specifik ræggefølge, dette har en massiv fordel et enkelt, færdiggjord og definitivt sql script, der kan tilføjes ændringer til databasen tables uden at slette at data'en i databasen.
+
+Dette er utrolig vigtigt for den agile udviklings metode, hvilket kræver et development-feedback loop mellem udvilkere og brugerer og for at dette kan være en realitet kræver det at applikationen der har persistence mellem updateringer for ikke at være forfærdelig for brugerne at bruge.
+
+For ikke eksekvere en migration som allerede er i databasen har vi et extra table kaldet \texttt{info} med row'et \texttt{schema\_version} som holder styr på hvad nummeret på den sidste migration der blev eksekveret var.
+
+QWest's migrationer kan alle sammen findes i QWest.DataAcess/Migrations, og er navngivet efter ræggefølge de skal eksekveres i, starter ved \texttt{1.sql} of på nuværende skrivnings tidspunkt ender ved \texttt{20.sql}
+
+Efter migrationen processen i QWest insertet også backup geopolitisk data hvis intet geopolitisk data kan findes i databasen, dette er tildels af testing årsager eftersom at vores integration tests kunne finde på at slætte alle table's i databasen hvilket ville slette dette næsten statiske data, og tildels pga. af at dette skulle uploades til databasen første gang på en eller anden måde.
 
 \section{Services}\label{sec:servicesImp}
 
