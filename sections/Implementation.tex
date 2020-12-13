@@ -170,7 +170,7 @@ QWest's migrationer kan alle sammen findes i QWest.DataAcess/Migrations, og er n
 Efter migrationen processen i QWest insertet også backup geopolitisk data hvis intet geopolitisk data kan findes i databasen, dette er tildels af testing årsager eftersom at vores integration tests kunne finde på at slætte alle table's i databasen hvilket ville slette dette næsten statiske data, og tildels pga. af at dette skulle uploades til databasen første gang på en eller anden måde.
 
 \section{Services}\label{sec:servicesImp}
-
+QWest er en applikation bestående af services, endten skrevet i node.js eller c\#.
 
 \section{Web design}\label{sec:webdesign}
 \subsection{Back-end and logic}\label{sec:backend}
@@ -178,3 +178,15 @@ Efter migrationen processen i QWest insertet også backup geopolitisk data hvis 
 
 
 \section{Testing}\label{sec:testing}
+
+\section{Webscraping af geopolitisk data}\label{sec:datascraping}
+det geopolitiske data QWest projected omhandler sig om er bedst beskrevet af ISO 3166 standarden \cite{ISO3166}, primært ISO 3166-1 og ISO 3166-2, der er dog et stort problem ved dette data, ISO 3166-1 er perfect for vores use-case men ISO 3166-2 har problemmet med at alle navne på lande subdivisions are lokalle navne i det lokalle sprog, dette virker utrolig dårligt i QWest's situation eftersom at de rejsende ikke nødvendighvis ved hvad de lokalle navn for deres lokation er, og kun kender det engelske navn, det ville være en forfærdelig bruger oplevelse for fx en amerikans rejsende som to på ud og rejse i Nordjylland, men når han bruger vores applikation kan han ikke finde "Northern Denmark Region" hvilket er hvad denne region hedder for ham.
+
+Løsningen på dette problem er selfølgelig at have en måde at have så mange mulige navne på alle steder så muligt, vigtigts værende det engelske/internationalle navn. Det eneste sted dette data kun blive fundet i en nogenlunde konsistent, nogenlunde computerlæselig måde er på wikipedia.
+
+Wikimedia (platformen Wikipedia er bygget på) udbyder deres egen REST API \cite{Wikimedia-REST-API-Documentation}, ud over dette har Wikipedia en entry for vært lands ISO 3166-2, det vil sige all deres subdivisions, og de er alle navngivet \texttt{ISO\_3166-2:}<landets alpha2>, alle af disse sider er også opbygget på den samme måde, en tabel der med id'et til mest venstre og alt til højre fra dette er forskellige måder at skrive subdivision'ens navn på. Det eneste problem med dette data er at Wikimedia's REST API kan kun representere det i HTML form sammen med resten af den standard wikipedia side.
+
+Alt i alt skal et program skrives som kan læse resultatet fra Wikimedia's REST API og derefter parse html'en og indsamle det data der er relevant. 
+Denne slags program er ofte kaldet en \texttt{web scraper}, og QWest's Wikipedia web scraper kan findes i QWest koden i folderen \texttt{iso3166converter}.
+
+\texttt{iso3166converter} er skrevet i ruby \cite{RubyLang}, et dynamisk programmerings sprog med fokusområde på at udviklingsværktøjer og hurtige scripts, meget ligesom python. \texttt{iso3166converter} bruger 2 gems (ruby's navn for tredjepartsbiblioteker) \texttt{nokogiri} \cite{nokogiri}, som bruges til at parse html, og \texttt{httparty} \cite{httparty}, som bruges til at sende http requests 
