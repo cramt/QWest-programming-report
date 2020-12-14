@@ -99,13 +99,13 @@ QWest.Admin og QWest.Api frontend er henholdsvis administrator adgang og bruger 
     \label{fig:admin_panel}
 \end{figure}
 
-QWest.Web frontend er brugens klient og en html frontend generet i QWest.Web til at blive vist i en browser, QWest.Web frontend kommunikere med vores REST service QWest.Api gennem QWest.Web some fungurere some en proxy der sender http request'er der started med \texttt{/api/} til QWest.Api, QWest.Email er et service dedikeret til at sende emails til brugerer, lige nu er QWest.Email utrolig lile, omrking 50 linjer og det kunne meget nemt argumenteres for at det skulle være en del af QWest.Api, dette var originalt planen, men der existere ikke nogen "out-of-the-box" biblioteker som ikke kræver at en smtp server for c\#, kun node.js, og denne realitet redusere vores muligheder til at sætte op in stmp server eller bare lave email til et seperat service skrevet i node.js
+QWest.Web er en frontend og brugerens klient. Der bliver genereret HTML i QWest.Web, som kan vises i en browser. QWest.Web frontend kommunikerer med vores REST service QWest.Api gennem QWest.Web, der fungerer som en proxy, og sender http forespørgsler. Forespørgsler sendes med teksten \texttt{/api/} til QWest.Api, hvor metoder i backend så kan tilgås. QWest.Email er en service dedikeret til at sende emails til brugere og bruges kun til at sende mail til nulstilling af password. QWest.Email er en meget lille service, omrking 50 linjer kode, og der kunne nemt argumenteres for, at det skulle være en del af QWest.Api. Dette var originalt planen, men der eksisterer ikke nogle "out-of-the-box" biblioteker, som ikke kræver at en SMTP server for c\#, men kun node.js, og dette reducerer mulighederne for at sætte en SMTP server op eller bare lave email til et seperat service skrevet i node.js.
 
 
 \section{RESTful Web API}\label{sec:REST}
-Vores REST API, QWest.Api, er et service for sig selv, hvis premære job er at håntere logikken for brugerens interaktion med platformens persistente data, den gør ting some at vi er sikker på at vores data giver mening i forhold til vores domæne (fx at vi ikke oprætter en gruppe, uden nogen personer i gruppen) og checker om brugeren er authentikeret.
+Vores REST API, QWest.Api, er en service for sig selv, hvis primære job er at håndtere logikken for brugerens interaktion med platformens persistente data. QWest.Api sørger blandt andet for, at vi er sikre på, at data der håndteres giver mening i forhold til domænet (fx at vi ikke opretter en gruppe, uden personer i gruppen) og checker om brugeren er autentificeret.
 
-QWest.Api bruger frameworket ASP.NET framework Web Api, sammen med Owin for middleware og Json.NET til serializering og deserializering a JSON data.
+QWest.Api bruger frameworket ASP.NET framework Web Api, sammen med OWIN\cite{owin} til middleware og Json.NET til serializering og deserializering a JSON data.
 
 QWest.Api bruger JSON som representation metoden, dette gøres eftersom at JSON er en af de mest populære måder af serializere data, ud over det er JSON både læseligt for mennesker sammentidig med at bruge mindre plads end andre menneskelæselig alternativer som XML. JSON er også bygget ind i javascript, hvilket gør det et næmt valg dag vores primære bruger af dette API kommer til at være QWest.Web frontend som er 100\% javascript at det skal køre i en browser
 
