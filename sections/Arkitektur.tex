@@ -105,7 +105,7 @@ QWest.Web er en frontend og brugerens klient. Der bliver genereret HTML i QWest.
 \section{RESTful Web API}\label{sec:REST}
 Vores REST API, QWest.Api, er en service for sig selv, hvis primære job er at håndtere logikken for brugerens interaktion med platformens persistente data. QWest.Api sørger blandt andet for, at vi er sikre på, at data der håndteres giver mening i forhold til domænet (fx at vi ikke opretter en gruppe, uden personer i gruppen) og checker om brugeren er autentificeret.
 
-QWest.Api bruger frameworket ASP.NET framework Web Api, sammen med OWIN\cite{owin} til middleware og Json.NET til serializering og deserializering a JSON data.
+QWest.Api bruger frameworket ASP.NET framework Web Api, sammen med OWIN\cite{Owin} til middleware og Json.NET til serializering og deserializering a JSON data.
 
 QWest.Api bruger JSON som representation metoden, dette gøres eftersom at JSON er en af de mest populære måder af serializere data, ud over det er JSON både læseligt for mennesker sammentidig med at bruge mindre plads end andre menneskelæselig alternativer som XML. JSON er også bygget ind i javascript, hvilket gør det et næmt valg dag vores primære bruger af dette API kommer til at være QWest.Web frontend som er 100\% javascript at det skal køre i en browser
 % Cite JSON^^
