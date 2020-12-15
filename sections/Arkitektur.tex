@@ -60,10 +60,10 @@ For at gennemføre dette er der blevet brugt en 3-lags arkitektur, som indeholde
     \label{fig:architecture_model}
 \end{figure}
 
-i arkitektur modellen~\ref{fig:architecture_model} beskriver ellipserne klienter, servicer, library projecter eller lignende, blå værende frontend html/css/js, rød værende node.js og grøn værende c\#. 
+I arkitektur modellen~\ref{fig:architecture_model} beskriver ellipserne klienter, servicer, library projecter eller lignende, blå værende frontend html/css/js, rød værende node.js og grøn værende c\#. 
 De stiplede linjer beskriver interprocess kommunikation, i dette diagram er det altid http forespørgsler eller forespørgsler til databasen.
-De fuldt optrukket linjer between intraprocess kommunikation, oftest når et runtime af en art henter kode ind fra et andet del af projected, fx QWest.Api dll'en som henter ind QWest.DataAccess dll'en.
-Ud over dette er modellen også delt op i 2 dele, "trusted enviroment" og "untrusted enviroment", i vores trusted enviroment kan vi stole på at den forespørgsler vi modtager kommer fra os self og vi behøver ikke tænke på ting som sikkerhed of authentikation, "untrusted enviroment" er hvor bruger input kommer fra og det kan være alt fra SQL injection angreb til helt normalt bruger input.
+De fuldt optrukkede linjer mellem intraprocess kommunikation, er oftest når et runtime af en art henter kode ind fra en anden del af projektet, fx QWest.Api dll'en som henter ind fra QWest.DataAccess dll'en.
+Ud over dette, er modellen delt op i 2 dele, "trusted enviroment" og "untrusted enviroment". I "trusted enviroment" kan vi stole på at de forespørgsler vi modtager kommer fra os, så vi ikke behøver at tænke på ting som sikkerhed af autentificering. "untrusted enviroment" er hvor bruger input kommer fra, det kan være alt fra SQL injection angreb til helt et normalt bruger input.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{domain_model.png}
@@ -74,7 +74,7 @@ Ud over dette er modellen også delt op i 2 dele, "trusted enviroment" og "untru
 \subsection{Services}\label{sec:servicesArc}
 % Hvilke services benytter vi i QWest?
 % Hvilken funktion/ansvar har hver service?
-Som nævnt, så bruger man services til at håndtere kommunikation mellem de forskellige dele af programmet. Formålet er at gøre de forskellige dele uafhængige af hinanden så man ikke bare frit kan tilgå databasen, så man kan skjule og ændre back-end uden at påvirke front-end, og centralisere logikken i systemet. 
+Som nævnt tidligere, bruger man services til at håndtere kommunikation mellem de forskellige dele af programmet. Formålet er at gøre de forskellige dele uafhængige af hinanden så databasen ikke frit kan tilgås, så man kan skjule og ændre back-end uden at påvirke front-end  og centralisere logikken i systemet. 
 % Arkitekturen af programmet er struktureret ud fra 3-Tier Architecture\cite{3tier} 
 % MVC design mønstret er benyttet
 
