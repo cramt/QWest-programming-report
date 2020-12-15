@@ -18,7 +18,7 @@
 % implementation details
 %%%%%%%%%%%%%%%%
 % Database
-% Possibilities 
+% Possibilities
 %%% Why MSSQL Server and not a different technology
 %%% ADO.NET vs ORM like entity framework
 %%% EF, Code first, TDD, DB-first?
@@ -32,7 +32,7 @@
 % Relational model
 \chapter{Arkitektur}\label{ch:arkitektur}
 
-Dette afsnit omhandler hvilke arkitektur overvejelser der har været i projektet. Da et af målene med projektet er at lave en web-server som kan håndtere samtidighed mellem flere brugere, vil der være bestemte arkitekturer og overvejelser, som kan benyttes til at opnå målet. Herunder Distribuerede Systemer, RESTful Web API, Desktop Programming, Database design og Web design. 
+Dette afsnit omhandler hvilke arkitektur overvejelser der har været i projektet. Da et af målene med projektet er at lave en web-server som kan håndtere samtidighed mellem flere brugere, vil der være bestemte arkitekturer og overvejelser, som kan benyttes til at opnå målet. Herunder Distribuerede Systemer, RESTful Web API, Desktop Programming, Database design og Web design.
 
 Fremgangsmåden i projektet har været bottom-up, forstået på den måde, at rækkefølgen af hver feature er håndteret i rækkefølgen:
 \begin{itemize}\label{procedure}
@@ -49,10 +49,10 @@ Fremgangsmåden i projektet har været bottom-up, forstået på den måde, at r�
 
 \section{Distribueret System}\label{sec:distSys}
 % I need some help explaining better what OSI, TCP/IP, and how all these layers and services relate to that
-Dette projekt havde et krav om at være et distribueret system, bestående af flere services, som skulle kunne kommunikere med hinanden gennem en API. API'en er en kontrakt, som sørger for at flere systemer kan kommunikere med hinanden\cite{API}. Dette foregår gennem HTTP protokoller\cite{http}. 
-Som navnet "distribueret system" hentyder til, så skal disse services ikke være afhængige af hinanden - de skal decouples\cite{decoupling} og destribueres. Der er flere muligheder når det kommer til design af sådan et system. Det kan designes ud fra en lagdelt arkitektur som OSI eller TCP/IP\cite{osi_tcp}, og gøre brug af MVC design-mønstret. I TCP/IP forekommer disse lag: Applikationslag, Transportlag, Netværkslag og Netværks interface. 
-Hvert lag tjener sit eget formål ift. resten af programmet. 
-For at gennemføre dette er der blevet brugt en 3-lags arkitektur, som indeholder et præsentationslag, logik lag, og data lag. 
+Dette projekt havde et krav om at være et distribueret system, bestående af flere services, som skulle kunne kommunikere med hinanden gennem en API. API'en er en kontrakt, som sørger for at flere systemer kan kommunikere med hinanden\cite{API}. Dette foregår gennem HTTP protokoller\cite{http}.
+Som navnet "distribueret system" hentyder til, så skal disse services ikke være afhængige af hinanden - de skal decouples\cite{decoupling} og destribueres. Der er flere muligheder når det kommer til design af sådan et system. Det kan designes ud fra en lagdelt arkitektur som OSI eller TCP/IP\cite{osi_tcp}, og gøre brug af MVC design-mønstret. I TCP/IP forekommer disse lag: Applikationslag, Transportlag, Netværkslag og Netværks interface.
+Hvert lag tjener sit eget formål ift. resten af programmet.
+For at gennemføre dette er der blevet brugt en 3-lags arkitektur, som indeholder et præsentationslag, logik lag, og data lag.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{architecture.png}
@@ -60,7 +60,7 @@ For at gennemføre dette er der blevet brugt en 3-lags arkitektur, som indeholde
     \label{fig:architecture_model}
 \end{figure}
 
-I arkitektur modellen~\ref{fig:architecture_model} beskriver ellipserne klienter, servicer, library projecter eller lignende, blå værende frontend html/css/js, rød værende node.js\cite{nodejs} og grøn værende C\#. 
+I arkitektur modellen~\ref{fig:architecture_model} beskriver ellipserne klienter, servicer, library projecter eller lignende, blå værende frontend html/css/js, rød værende node.js\cite{nodejs} og grøn værende C\#.
 De stiplede linjer beskriver interprocess kommunikation, i dette diagram er det altid http forespørgsler eller forespørgsler til databasen.
 De fuldt optrukkede linjer mellem intraprocess kommunikation, er oftest når et runtime af en art henter kode ind fra en anden del af projektet, fx QWest.Api dll'en som henter ind fra QWest.DataAccess dll'en.
 Ud over dette, er modellen delt op i 2 dele, "trusted enviroment" og "untrusted enviroment". I "trusted enviroment" kan vi stole på at de forespørgsler vi modtager kommer fra os, så vi ikke behøver at tænke på ting som sikkerhed af autentificering. "untrusted enviroment" er hvor bruger input kommer fra, det kan være alt fra SQL injection angreb til helt et normalt bruger input.
@@ -74,7 +74,7 @@ Ud over dette, er modellen delt op i 2 dele, "trusted enviroment" og "untrusted 
 \subsection{Services}\label{sec:servicesArc}
 % Hvilke services benytter vi i QWest?
 % Hvilken funktion/ansvar har hver service?
-Som nævnt tidligere, bruger man services til at håndtere kommunikation mellem de forskellige dele af programmet. Formålet er at gøre de forskellige dele uafhængige af hinanden så databasen ikke frit kan tilgås, så man kan skjule og ændre back-end uden at påvirke front-end og centralisere logikken i systemet. Disse er struktureret ud fra en 3-tier arkitektur\cite{3tier}, med Client, Logic og Data tiers. 
+Som nævnt tidligere, bruger man services til at håndtere kommunikation mellem de forskellige dele af programmet. Formålet er at gøre de forskellige dele uafhængige af hinanden så databasen ikke frit kan tilgås, så man kan skjule og ændre back-end uden at påvirke front-end og centralisere logikken i systemet. Disse er struktureret ud fra en 3-tier arkitektur\cite{3tier}, med Client, Logic og Data tiers.
 % MVC design mønstret er benyttet
 
 I QWest er der følgende services:
@@ -104,15 +104,16 @@ QWest.Web er en frontend og brugerens klient, og hører derfor også under Clien
 \section{RESTful Web API}\label{sec:REST}
 Vores REST API, QWest.Api, er en service for sig selv, hvis primære job er at håndtere logikken for brugerens interaktion med platformens persistente data. Dette er derfor under Logic-tier. QWest.Api sørger blandt andet for, at vi er sikre på, at data der håndteres giver mening i forhold til domænet (fx at vi ikke opretter en gruppe, uden personer i gruppen) og checker om brugeren er autentificeret.
 
-QWest.Api bruger frameworket ASP.NET framework Web Api, sammen med OWIN\cite{owin} til middleware og Json.NET til serializering og deserializering a JSON data.
+QWest.Api bruger frameworket ASP.NET framework Web Api, sammen med OWIN\cite{Owin} til middleware og Json.NET til serializering og deserializering a JSON data.
 
 QWest.Api bruger JSON som representation metoden, dette gøres eftersom at JSON er en af de mest populære måder af serializere data, ud over det er JSON både læseligt for mennesker sammentidig med at bruge mindre plads end andre menneskelæselig alternativer som XML. JSON er også bygget ind i javascript, hvilket gør det et næmt valg dag vores primære bruger af dette API kommer til at være QWest.Web frontend som er 100\% javascript at det skal køre i en browser
+% Cite JSON^^
 
 \section{Desktop Programming}\label{sec:deskProgramming}
 % This is the QWest.Admin stuff
 
 \section{Database}\label{sec:database}
-Det sidste tier i 3-tier arkitekturen er selvfølgelig databasen. Databasen til projektet er oprettet med MSSQL\cite{MSSQL}. Til trods for at der findes andre SQL sprog end Microsoft's, blev MSSQL valgt fordi det er det vi i udviklingsteamet kender bedst til. Det ville være risikabelt at bruge en ubestemt mængde af tid på at sætte sig ind i et andet SQL system - især når vi i gruppen allerede har en god forståelse for MSSQL og skolen tildeler en gratis MSSQL server. Til gengæld er der taget højde for, at det skulle være muligt at implementere et andet SQL system - dette er gjort med DAO'er. DAO\cite{dao} designmønstret er gennemgående i projektet og forefindes i koden under QWest.DataAccess. Selve MSSQL implementationen findes i Mssql mappen. 
+Det sidste tier i 3-tier arkitekturen er selvfølgelig databasen. Databasen til projektet er oprettet med MSSQL\cite{MSSQL}. Til trods for at der findes andre SQL sprog end Microsoft's, blev MSSQL valgt fordi det er det vi i udviklingsteamet kender bedst til. Det ville være risikabelt at bruge en ubestemt mængde af tid på at sætte sig ind i et andet SQL system - især når vi i gruppen allerede har en god forståelse for MSSQL og skolen tildeler en gratis MSSQL server. Til gengæld er der taget højde for, at det skulle være muligt at implementere et andet SQL system - dette er gjort med DAO'er. DAO\cite{dao} designmønstret er gennemgående i projektet og forefindes i koden under QWest.DataAccess. Selve MSSQL implementationen findes i Mssql mappen.
 
 \begin{figure}
     \includegraphics[width=\linewidth]{relational_model.png}
@@ -120,7 +121,8 @@ Det sidste tier i 3-tier arkitekturen er selvfølgelig databasen. Databasen til 
     \label{fig:relational_model}
 \end{figure}
 
-\texttt{users} er omdrejningspunktet i databasen, da \texttt{users} er forbundet med \texttt{progress\_maps}, \texttt{posts}, \texttt{password\_reset\_tokens}, \texttt{users\_friendships}, \texttt{users\_friendship\_requests} og \texttt{users\_groups}. Disse forbinder så til resten af tabellerne, hvor \texttt{posts} har \texttt{posts\_images}, som har \texttt{images}. \texttt{progress\_maps} er forbundet med \texttt{geopolitical\_location}, gennem \texttt{progress\_maps\_locations}. \texttt{groups} er forbundet gennem \texttt{users\_groups}. 
+\texttt{users} er omdrejningspunktet i databasen, da \texttt{users} er forbundet med \texttt{progress\_maps}, \texttt{posts}, \texttt{password\_reset\_tokens}, \texttt{users\_friendships}, \texttt{users\_friendship\_requests} og \texttt{users\_groups}. Disse forbinder så til resten af tabellerne, hvor \texttt{posts} har \texttt{posts\_images}, som har \texttt{images}. \texttt{progress\_maps} er forbundet med \texttt{geopolitical\_location}, gennem \texttt{progress\_maps\_locations}. \texttt{groups} er forbundet gennem \texttt{users\_groups}.
+
 I domæne modellen, figur \ref{fig:domain_model}, ses forholdene mellem klasserne, som er belæg for de forskellige sammenkoblinger af tabellerne så modellerne afspejler hinanden. Databasen opfylder ikke samtlige krav til BCNF\cite{bcnf}. \texttt{name} på \texttt{geopolitical\_locations} og manglen på en seperat \texttt{subregions} tabel til \texttt{geopolitical\_location}. \texttt{name} er ikke atomisk, og kan indeholde flere navne på det samme land. Dette skyldes at lande som regel har flere officielle navne. Eksempelvis kan Storbrittanien hedde "United Kingdom", "Storbrittanien" og "UK", men stadig være det samme på alle andre områder. Såfremt et land har flere officielle navne, så lagres de i ét felt da det beskriver den samme tuple.
 
 %This is probably more important in Implementation than architecture
