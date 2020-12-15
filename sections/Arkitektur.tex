@@ -60,7 +60,7 @@ For at gennemføre dette er der blevet brugt en 3-lags arkitektur, som indeholde
     \label{fig:architecture_model}
 \end{figure}
 
-I arkitektur modellen~\ref{fig:architecture_model} beskriver ellipserne klienter, servicer, library projecter eller lignende, blå værende frontend html/css/js, rød værende node.js og grøn værende c\#. 
+I arkitektur modellen~\ref{fig:architecture_model} beskriver ellipserne klienter, servicer, library projecter eller lignende, blå værende frontend html/css/js, rød værende node.js\cite{nodejs} og grøn værende C\#. 
 De stiplede linjer beskriver interprocess kommunikation, i dette diagram er det altid http forespørgsler eller forespørgsler til databasen.
 De fuldt optrukkede linjer mellem intraprocess kommunikation, er oftest når et runtime af en art henter kode ind fra en anden del af projektet, fx QWest.Api dll'en som henter ind fra QWest.DataAccess dll'en.
 Ud over dette, er modellen delt op i 2 dele, "trusted enviroment" og "untrusted enviroment". I "trusted enviroment" kan vi stole på at de forespørgsler vi modtager kommer fra os, så vi ikke behøver at tænke på ting som sikkerhed af autentificering. "untrusted enviroment" er hvor bruger input kommer fra, det kan være alt fra SQL injection angreb til helt et normalt bruger input.
@@ -74,8 +74,7 @@ Ud over dette, er modellen delt op i 2 dele, "trusted enviroment" og "untrusted 
 \subsection{Services}\label{sec:servicesArc}
 % Hvilke services benytter vi i QWest?
 % Hvilken funktion/ansvar har hver service?
-Som nævnt tidligere, bruger man services til at håndtere kommunikation mellem de forskellige dele af programmet. Formålet er at gøre de forskellige dele uafhængige af hinanden så databasen ikke frit kan tilgås, så man kan skjule og ændre back-end uden at påvirke front-end  og centralisere logikken i systemet. 
-% Arkitekturen af programmet er struktureret ud fra 3-Tier Architecture\cite{3tier} 
+Som nævnt tidligere, bruger man services til at håndtere kommunikation mellem de forskellige dele af programmet. Formålet er at gøre de forskellige dele uafhængige af hinanden så databasen ikke frit kan tilgås, så man kan skjule og ændre back-end uden at påvirke front-end og centralisere logikken i systemet. Disse er struktureret ud fra en 3-tier arkitektur\cite{3tier}, med Client, Logic og Data tiers. 
 % MVC design mønstret er benyttet
 
 I QWest er der følgende services:
@@ -91,7 +90,7 @@ Og De følgende klienter
     \item QWest.Web frontend
 \end{itemize}
 
-QWest.Admin og QWest.Api frontend er henholdsvis administrator adgang og bruger adgang. QWest.Admin åbner Desktop applikationen, hvor hvert land kan opdateres manuelt. Det skulle så være muligt hvert år at opdatere informationerne på hvert land én gang om året. QWest.Admin benytter sig ikke af Web og Email servicen, da det i dette projekt er vurderet, at det ikke er nødvendigt med front-end til administration. 
+QWest.Admin og QWest.Web frontend er henholdsvis administrator adgang og bruger adgang og indgår i Client-tier. QWest.Admin åbner Desktop applikationen, hvor hvert land kan opdateres manuelt. Det skulle så være muligt hvert år at opdatere informationerne på hvert land én gang om året. QWest.Admin benytter sig ikke af Web og Email servicen, da det i dette projekt er vurderet, at det ikke er nødvendigt med front-end til administration. 
 
 \begin{figure}
     \includegraphics[width=\linewidth]{admin_panel.png}
@@ -99,11 +98,11 @@ QWest.Admin og QWest.Api frontend er henholdsvis administrator adgang og bruger 
     \label{fig:admin_panel}
 \end{figure}
 
-QWest.Web er en frontend og brugerens klient. Der bliver genereret HTML i QWest.Web, som kan vises i en browser. QWest.Web frontend kommunikerer med vores REST service QWest.Api gennem QWest.Web, der fungerer som en proxy, og sender http forespørgsler. Forespørgsler sendes med teksten \texttt{/api/} til QWest.Api, hvor metoder i backend så kan tilgås. QWest.Email er en service dedikeret til at sende emails til brugere og bruges kun til at sende mail til nulstilling af password. QWest.Email er en meget lille service, omrking 50 linjer kode, og der kunne nemt argumenteres for, at det skulle være en del af QWest.Api. Dette var originalt planen, men der eksisterer ikke nogle "out-of-the-box" biblioteker, som ikke kræver at en SMTP server for c\#, men kun node.js, og dette reducerer mulighederne for at sætte en SMTP server op eller bare lave email til et seperat service skrevet i node.js.
+QWest.Web er en frontend og brugerens klient, og hører derfor også under Client-tier. Der bliver genereret HTML i QWest.Web, som kan vises i en browser. QWest.Web frontend kommunikerer med vores REST service QWest.Api gennem QWest.Web, der fungerer som en proxy, og sender http forespørgsler. Forespørgsler sendes med teksten \texttt{/api/} til QWest.Api, hvor metoder i backend så kan tilgås. QWest.Email er en service dedikeret til at sende emails til brugere og bruges kun til at sende mail til nulstilling af password. QWest.Email er en meget lille service, omrking 50 linjer kode, og der kunne nemt argumenteres for, at det skulle være en del af QWest.Api. Dette var originalt planen, men der eksisterer ikke nogle "out-of-the-box" biblioteker, som ikke kræver at en SMTP server for C\#, men kun node.js, og dette reducerer mulighederne for at sætte en SMTP server op eller bare lave email til et seperat service skrevet i node.js.
 
 
 \section{RESTful Web API}\label{sec:REST}
-Vores REST API, QWest.Api, er en service for sig selv, hvis primære job er at håndtere logikken for brugerens interaktion med platformens persistente data. QWest.Api sørger blandt andet for, at vi er sikre på, at data der håndteres giver mening i forhold til domænet (fx at vi ikke opretter en gruppe, uden personer i gruppen) og checker om brugeren er autentificeret.
+Vores REST API, QWest.Api, er en service for sig selv, hvis primære job er at håndtere logikken for brugerens interaktion med platformens persistente data. Dette er derfor under Logic-tier. QWest.Api sørger blandt andet for, at vi er sikre på, at data der håndteres giver mening i forhold til domænet (fx at vi ikke opretter en gruppe, uden personer i gruppen) og checker om brugeren er autentificeret.
 
 QWest.Api bruger frameworket ASP.NET framework Web Api, sammen med OWIN\cite{owin} til middleware og Json.NET til serializering og deserializering a JSON data.
 
@@ -113,7 +112,7 @@ QWest.Api bruger JSON som representation metoden, dette gøres eftersom at JSON 
 % This is the QWest.Admin stuff
 
 \section{Database}\label{sec:database}
-Databasen til projektet er oprettet med MSSQL\cite{MSSQL}. Til trods for at der findes andre SQL sprog end Microsoft's, blev MSSQL valgt fordi det er det vi i udviklingsteamet kender bedst til. Det ville være risikabelt at bruge en ubestemt mængde af tid på at sætte sig ind i et andet SQL system - især når vi i gruppen allerede har en god forståelse for MSSQL og skolen tildeler en gratis MSSQL server. Til gengæld er der taget højde for, at det skulle være muligt at implementere et andet SQL system - dette er gjort med DAO'er. DAO\cite{dao} designmønstret er gennemgående i projektet og forefindes i koden under QWest.DataAccess. Selve MSSQL implementationen findes i Mssql mappen. 
+Det sidste tier i 3-tier arkitekturen er selvfølgelig databasen. Databasen til projektet er oprettet med MSSQL\cite{MSSQL}. Til trods for at der findes andre SQL sprog end Microsoft's, blev MSSQL valgt fordi det er det vi i udviklingsteamet kender bedst til. Det ville være risikabelt at bruge en ubestemt mængde af tid på at sætte sig ind i et andet SQL system - især når vi i gruppen allerede har en god forståelse for MSSQL og skolen tildeler en gratis MSSQL server. Til gengæld er der taget højde for, at det skulle være muligt at implementere et andet SQL system - dette er gjort med DAO'er. DAO\cite{dao} designmønstret er gennemgående i projektet og forefindes i koden under QWest.DataAccess. Selve MSSQL implementationen findes i Mssql mappen. 
 
 \begin{figure}
     \includegraphics[width=\linewidth]{relational_model.png}
@@ -126,5 +125,8 @@ I domæne modellen, figur \ref{fig:domain_model}, ses forholdene mellem klassern
 
 %This is probably more important in Implementation than architecture
 \section{Web design}\label{sec:webdesign}
+Web-klienten til brugeren kan tilgås igennem en browser. %uhhhhhh idk what more write
 \subsection{Back-end and logic}\label{sec:backend}
+Logikken er skrevet i Javascript og JQuery, som håndtere alle funktioner på hjemmesiden. Der bruges bl.a. Javascript og JQuery til dynamisk at indsætte diverse knapper, venner, grupper, og opslag, ud fra informationerne lagret i databasen. Det er altså Javascript og JQuery som sørger for, at information fra front-end kan blive sendt til back-end og databasen, ved at kalde QWest.Api som indeholder de forskellige Controller-klasser. %More in implementation
 \subsection{Front-end and usability}\label{sec:frontend}
+Selve front-end er designet ud fra enkelte principper: Top og bund af hver subdomæne skal være nogenlunde ens, knapper skal være store og tydelige, og siderne skal kunne vises på forskellige skærmstørrelser og devices. Al styling er foregået med CSS. %needs more here? Otherwise we can write about it in implementation
