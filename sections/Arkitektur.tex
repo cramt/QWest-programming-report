@@ -91,7 +91,7 @@ Og De følgende klienter
     \item QWest.Web frontend
 \end{itemize}
 
-QWest.Admin og QWest.Api frontend er henholdsvis administrator adgang og bruger adgang. QWest.Admin åbner Desktop applikationen, hvor hvert land kan opdateres manuelt. Det skulle så være muligt hvert år at opdatere informationerne på hvert land én gang om året. QWest.Admin benytter sig ikke af Web og Email servicen, da det i dette projekt er vurderet, at det ikke er nødvendigt med front-end til administration. 
+QWest.Admin og QWest.Api frontend er henholdsvis administrator adgang og bruger adgang. QWest.Admin åbner desktop applikationen, hvor hvert land kan opdateres manuelt. Det skulle være muligt, at opdatere informationerne på hvert land én gang om året. QWest.Admin benytter sig ikke af Web og Email servicen, da det i dette projekt er vurderet, at det ikke er nødvendigt med front-end til administration. 
 
 \begin{figure}
     \includegraphics[width=\linewidth]{admin_panel.png}
@@ -108,6 +108,7 @@ Vores REST API, QWest.Api, er en service for sig selv, hvis primære job er at h
 QWest.Api bruger frameworket ASP.NET framework Web Api, sammen med OWIN\cite{owin} til middleware og Json.NET til serializering og deserializering a JSON data.
 
 QWest.Api bruger JSON som representation metoden, dette gøres eftersom at JSON er en af de mest populære måder af serializere data, ud over det er JSON både læseligt for mennesker sammentidig med at bruge mindre plads end andre menneskelæselig alternativer som XML. JSON er også bygget ind i javascript, hvilket gør det et næmt valg dag vores primære bruger af dette API kommer til at være QWest.Web frontend som er 100\% javascript at det skal køre i en browser
+% Cite JSON^^
 
 \section{Desktop Programming}\label{sec:deskProgramming}
 % This is the QWest.Admin stuff
@@ -122,6 +123,7 @@ Databasen til projektet er oprettet med MSSQL\cite{MSSQL}. Til trods for at der 
 \end{figure}
 
 \texttt{users} er omdrejningspunktet i databasen, da \texttt{users} er forbundet med \texttt{progress\_maps}, \texttt{posts}, \texttt{password\_reset\_tokens}, \texttt{users\_friendships}, \texttt{users\_friendship\_requests} og \texttt{users\_groups}. Disse forbinder så til resten af tabellerne, hvor \texttt{posts} har \texttt{posts\_images}, som har \texttt{images}. \texttt{progress\_maps} er forbundet med \texttt{geopolitical\_location}, gennem \texttt{progress\_maps\_locations}. \texttt{groups} er forbundet gennem \texttt{users\_groups}. 
+
 I domæne modellen, figur \ref{fig:domain_model}, ses forholdene mellem klasserne, som er belæg for de forskellige sammenkoblinger af tabellerne så modellerne afspejler hinanden. Databasen opfylder ikke samtlige krav til BCNF\cite{bcnf}. \texttt{name} på \texttt{geopolitical\_locations} og manglen på en seperat \texttt{subregions} tabel til \texttt{geopolitical\_location}. \texttt{name} er ikke atomisk, og kan indeholde flere navne på det samme land. Dette skyldes at lande som regel har flere officielle navne. Eksempelvis kan Storbrittanien hedde "United Kingdom", "Storbrittanien" og "UK", men stadig være det samme på alle andre områder. Såfremt et land har flere officielle navne, så lagres de i ét felt da det beskriver den samme tuple.
 
 %This is probably more important in Implementation than architecture
