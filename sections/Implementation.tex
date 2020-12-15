@@ -172,7 +172,7 @@ Efter migrationsprocessen i QWest, indsættes også backup af geopolitisk data,h
 
 \section{Services}\label{sec:servicesImp}
 QWest er en applikation bestående af services, enten skrevet i node.js\cite{nodejs} eller C\#. Som nævnt i \ref{sec:servicesArc} er disse services henholdsvis \texttt{QWest.Api}, \texttt{QWest.Web}, \texttt{QWest.Email}.% og \texttt{QWest.Admin}. ikke en service, right? Den er ikke nævnt som service i Arkitektur (linje 80)
-Ved start af QWest kaldes disse services fra \texttt{QWest.Services.Run}, hvor \texttt{WebSerivce} og \texttt{EmailSerivce} kaldes som NodeJS services, og \texttt{ApiService} og \texttt{AdminService} kaldes som C# services. 
+Ved start af QWest kaldes disse services fra \texttt{QWest.Services.Run}, hvor \texttt{WebSerivce} og \texttt{EmailSerivce} kaldes som NodeJS services, og \texttt{ApiService} og \texttt{AdminService} kaldes som C\# services. 
 Som nævnt i \ref{sec:servicesArc} er \texttt{QWest.Api} den service som forbinder front-end med resten af systemet og databasen. Hvis der eksempelvis er oprettet et opslag på front-end af brugeren, skal opslaget sendes til systemet som så kan lagre det i databasen, så det senere kan vises når brugeren efterspørger det. Implementationen af dette vil blive gennemgået i næsten afsnit \ref{sec:backend}.
 
 \section{Web design}\label{sec:webdesign}
