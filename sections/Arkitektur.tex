@@ -72,10 +72,7 @@ Ud over dette, er modellen delt op i 2 dele, "trusted enviroment" og "untrusted 
 \end{figure}
 
 \subsection{Services}\label{sec:servicesArc}
-% Hvilke services benytter vi i QWest?
-% Hvilken funktion/ansvar har hver service?
 Som nævnt tidligere, bruger man services til at håndtere kommunikation mellem de forskellige dele af programmet. Formålet er at gøre de forskellige dele uafhængige af hinanden så databasen ikke frit kan tilgås, så man kan skjule og ændre back-end uden at påvirke front-end og centralisere logikken i systemet. Disse er struktureret ud fra en 3-tier arkitektur\cite{3tier}, med Client, Logic og Data tiers.
-% MVC design mønstret er benyttet
 
 I QWest er der følgende services:
 \begin{itemize}\label{services}
@@ -125,10 +122,9 @@ Det sidste tier i 3-tier arkitekturen er selvfølgelig databasen. Databasen til 
 
 I domæne modellen, figur \ref{fig:domain_model}, ses forholdene mellem klasserne, som er belæg for de forskellige sammenkoblinger af tabellerne så modellerne afspejler hinanden. Databasen opfylder ikke samtlige krav til BCNF\cite{bcnf}. \texttt{name} på \texttt{geopolitical\_locations} og manglen på en seperat \texttt{subregions} tabel til \texttt{geopolitical\_location}. \texttt{name} er ikke atomisk, og kan indeholde flere navne på det samme land. Dette skyldes at lande som regel har flere officielle navne. Eksempelvis kan Storbrittanien hedde "United Kingdom", "Storbrittanien" og "UK", men stadig være det samme på alle andre områder. Såfremt et land har flere officielle navne, så lagres de i ét felt da det beskriver den samme tuple.
 
-%This is probably more important in Implementation than architecture
 \section{Web design}\label{sec:webdesign}
 Web-klienten til brugeren kan tilgås igennem en browser. %uhhhhhh idk what more write
 \subsection{Back-end and logic}\label{sec:backend}
 Logikken er skrevet i Javascript og JQuery, som håndtere alle funktioner på hjemmesiden. Der bruges bl.a. Javascript og JQuery til dynamisk at indsætte diverse knapper, venner, grupper, og opslag, ud fra informationerne lagret i databasen. Det er altså Javascript og JQuery som sørger for, at information fra front-end kan blive sendt til back-end og databasen, ved at kalde QWest.Api som indeholder de forskellige Controller-klasser. %More in implementation
 \subsection{Front-end and usability}\label{sec:frontend}
-Selve front-end er designet ud fra enkelte principper: Top og bund af hver subdomæne skal være nogenlunde ens, knapper skal være store og tydelige, og siderne skal kunne vises på forskellige skærmstørrelser og devices. Al styling er foregået med CSS. %needs more here? Otherwise we can write about it in implementation
+Selve front-end er designet ud fra enkelte principper: Top og bund af hver subdomæne skal være nogenlunde ens, knapper skal være store og tydelige, og siderne skal kunne vises på forskellige skærmstørrelser og devices. Al styling er foregået med CSS. Hvordan alt dette er implementeret vil gennemgås i implementation afsnittet. %needs more here? Otherwise we can write about it in implementation
