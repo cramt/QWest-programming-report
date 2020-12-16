@@ -1,9 +1,9 @@
 % Concurrency - This is one of the most important sections
 % Explain possible solutions and argue for the chosen solution
 % Practical examples welcome. 
-% Keywords: Optimistic/Pessimistic concurrency on database, Transactions, Isolation levels, ACID, Threading, Parallelism, Async/Await, Race Conditions, Deadlocks
+% Keywords: Optimistic/Pessimistic concurrency on database, Transactions, ACID, Parallelism, Async/Await,
 \chapter{Samtidighedsproblemer}\label{ch:concurrency}
-Et samtidighedsproblem opstår når flere operationer skal håndteres på samme tid. Hvis operationerne %%bruhh
+Et samtidighedsproblem opstår når flere operationer skal håndteres på samme tid. Hvis operationerne overskriver samme data er det vigtigt at vide hvilken ændring der skal lagres, eller om de begge skal håndteres men i bestemt rækkefølge.
 
 Et samtidighedsproblem opstår når to eller flere operationer foregår samtidigt, men hvor rækkefølgen af operationerne er vigtige - dette er også kendt som en Race Condition.\cite{racecondition} Dette kan eksempelvis være to threads, som begge skal inkrementere samme variabel. Hvis Thread A læser variablen først, laver matematisk operation på variablen, og Thread B samtidig læser variablen og laver matematisk operation, kan én af disse operationer "forsvinde" da den ene kan overskrive den anden. Dette er et samtidighedsproblem - rækkefølgen skal følges korrekt for at undgå forsvunde eller undladte operationer.
 
@@ -13,18 +13,13 @@ I dette projekt kan der opstå samtidighedsproblemer når flere brugere skal opd
 \section{Mulige løsninger}\label{sec:solutions}
 Generelt om samtidighedsproblemer er der to tilgange: Pessimistisk eller optimistisk samtidighed. 
 
-Den optimistiske tilgang er primært rettet mod programmer som kører i lang tid. Ved den optimistiske tilgang bliver data som ændres ikke låst, men i stedet er det mere vigtigt at vide hvilken version af data der er tilgået. Flere brugere kan så tilgå det samme data og ændre det samtidig, hvor hver ændring så får tildelt sit eget versionsnummer. Denne versionsstyring kan bruges ved at have et tal i databasen, og metoden er også kaldet Row Versioning\cite{rowversioning}
-%pessimistic
+Den optimistiske tilgang er primært rettet mod programmer som kører i lang tid. Ved den optimistiske tilgang bliver data som ændres ikke låst, men i stedet er det mere vigtigt at vide hvilken version af data der er tilgået. Flere brugere kan så tilgå det samme data og ændre det samtidig, hvor hver ændring så får tildelt sit eget versionsnummer. Denne versionsstyring kan bruges ved at have et tal i databasen, og metoden er også kaldet Row Versioning\cite{rowversioning}.
 
 Den pessimistiske tilgang betyder at der sættes lås på data så snart det skal ændres, og låsen frigøres først når dataen er ændret færdig. Dette kan være vigtigt ved transaktioner hvor det er meget vigtigt at operationerne udføres i korrekt rækkefølge, og kun én ændring ad gangen - eksempelvis ved bank-overførsler. hvis der hæves penge af 2 instanser samtidig fra samme konto, er det vigtigt at den første hævning får en lås på kontoen, således at der ikke opstår en dobbelthævning på penge som ikke eksisterer. 
-%optimistisk tilgang
-
-
-
 
 
 \section{Valgt løsning}\label{sec:chosen_solution}
-Pessimistisk er fravalgt fordi der kan opstå en situation hvor en af gruppemedlemmerne begynder at redigere et opslag, så der bliver oprettet en lås på opslaget, hvorefter brugeren lukker deres browser vindue eller computeren. Nu er der en lås som ikke kan låses op, medmindre der er implementeret en timer eller lignende. Det kan godt lade sig gøre at implementere Pessimistisk tilgang ved brug af WebSockets\cite{websockets} eftersom WebSockets har en konstant forbindelse. Den konstante forbindelse kan derfor oplyse om hvornår brugeren eksempelvis har lukket browservinduet, som så kunne bruges til at frigøre opslaget for redigering. Dette er dog ikke en god løsning, eftersom WebSockets har states som går imod RESTful implementationen i dette projekt. Udover dette ville det også være ufordelagtigt at skalere. 
+Pessimistisk er fravalgt fordi der kan opstå en situation hvor en af gruppemedlemmerne begynder at redigere et opslag, så der bliver oprettet en lås på opslaget, hvorefter brugeren lukker deres browser vindue eller computeren. Nu er der en lås som ikke kan låses op - dette er også kaldet Deadlock\cite{deadlock}. Dette kunne løses ved at implementere en timer eller lignende. Det kan godt lade sig gøre at implementere Pessimistisk tilgang ved brug af WebSockets\cite{websockets} eftersom WebSockets har en konstant forbindelse. Den konstante forbindelse kan derfor oplyse om hvornår brugeren eksempelvis har lukket browservinduet, som så kunne bruges til at frigøre opslaget for redigering. Dette er dog ikke en god løsning, eftersom WebSockets har states som går imod RESTful implementationen i dette projekt. Udover dette ville det også være ufordelagtigt at skalere. 
 Generelt skulle der bruges meget tid på at implementere features som kunne håndtere den Pessimistiske tilgang, samt de problemer der kan opstå. Da dette ikke omhandler livsvigtige data, såsom banknota, eller personlige oplysninger. 
 
 Der er derfor valgt en optimistisk tilgang, da dette passer bedre til vores projekt er bygget på REST principperne, hvor vi også kan lagre versioner af ændringer foretaget. 
