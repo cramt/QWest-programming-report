@@ -3,9 +3,9 @@
 % Practical examples welcome. 
 % Keywords: Optimistic/Pessimistic concurrency on database, Transactions, Isolation levels, ACID, Threading, Parallelism, Async/Await, Race Conditions, Deadlocks
 \chapter{Samtidighedsproblemer}\label{ch:concurrency}
-Et samtidighedsproblem opstår når flere operationer skal håndteres på samme tid. Hvis operationerne 
+Et samtidighedsproblem opstår når flere operationer skal håndteres på samme tid. Hvis operationerne %%bruhh
 
-Et samtidighedsproblem opstår når to eller flere operationer foregår samtidigt, men hvor rækkefølgen af operationerne er vigtige. Dette kan eksempelvis være to threads, som begge skal inkrementere samme variabel. Hvis Thread A læser variablen først, laver matematisk operation på variablen, og Thread B samtidig læser variablen og laver matematisk operation, kan én af disse operationer "forsvinde" da den ene kan overskrive den anden. Dette er et samtidighedsproblem - rækkefølgen skal følges korrekt for at undgå forsvunde eller undladte operationer.
+Et samtidighedsproblem opstår når to eller flere operationer foregår samtidigt, men hvor rækkefølgen af operationerne er vigtige - dette er også kendt som en Race Condition.\cite{racecondition} Dette kan eksempelvis være to threads, som begge skal inkrementere samme variabel. Hvis Thread A læser variablen først, laver matematisk operation på variablen, og Thread B samtidig læser variablen og laver matematisk operation, kan én af disse operationer "forsvinde" da den ene kan overskrive den anden. Dette er et samtidighedsproblem - rækkefølgen skal følges korrekt for at undgå forsvunde eller undladte operationer.
 
 I dette projekt kan der opstå samtidighedsproblemer når flere brugere skal opdatere et opslag. Der er i programmet mulighed for at oprette grupper med flere medlemmer, hvor alle medlemmer har adgang til at ændre gruppe-opslag. Hvis flere medlemmer begynder at rette et opslag samtidig er det ikke umiddelbart klart hvilken ændring foretaget der så skal gemmes. Det skal derfor håndteres sådan at alle samtidige operationer håndteres.
 
@@ -13,7 +13,10 @@ I dette projekt kan der opstå samtidighedsproblemer når flere brugere skal opd
 \section{Mulige løsninger}\label{sec:solutions}
 Generelt om samtidighedsproblemer er der to tilgange: Pessimistisk eller optimistisk samtidighed. 
 
+Den optimistiske tilgang er primært rettet mod programmer som kører i lang tid. Ved den optimistiske tilgang bliver data som ændres ikke låst, men i stedet er det mere vigtigt at vide hvilken version af data der er tilgået. Flere brugere kan så tilgå det samme data og ændre det samtidig, hvor hver ændring så får tildelt sit eget versionsnummer. Denne versionsstyring kan bruges ved at have et tal i databasen, og metoden er også kaldet Row Versioning\cite{rowversioning}
 %pessimistic
+
+Den pessimistiske tilgang betyder at der sættes lås på data så snart det skal ændres, og låsen frigøres først når dataen er ændret færdig. Dette kan være vigtigt ved transaktioner hvor det er meget vigtigt at operationerne udføres i korrekt rækkefølge, og kun én ændring ad gangen - eksempelvis ved bank-overførsler. hvis der hæves penge af 2 instanser samtidig fra samme konto, er det vigtigt at den første hævning får en lås på kontoen, således at der ikke opstår en dobbelthævning på penge som ikke eksisterer. 
 %optimistisk tilgang
 
 
