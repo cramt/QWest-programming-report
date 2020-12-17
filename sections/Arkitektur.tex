@@ -1,13 +1,6 @@
-%%% ADO.NET vs ORM like entity framework
-%%% EF, Code first, TDD, DB-first?
 %%%%% Lazy-eager loading?
 %%%%% Query generation
 %%%%% Pitfalls
-% Reasoning over these
-% Choice - and reason for choice
-% Design of the database, and implementation details and reasoning
-% Normalization too
-% Relational model
 \chapter{Arkitektur}\label{ch:arkitektur}
 
 Dette afsnit omhandler hvilke arkitektur overvejelser der har været i projektet. Da et af målene med projektet er at lave en web-server som kan håndtere samtidighed mellem flere brugere, vil der være bestemte arkitekturer og overvejelser, som kan benyttes til at opnå målet. Herunder Distribuerede Systemer, RESTful Web API, Desktop Programming, Database design og Web design.
@@ -28,7 +21,7 @@ Fremgangsmåden i projektet har været bottom-up, forstået på den måde, at r�
 \section{Distribueret System}\label{sec:distSys}
 % I need some help explaining better what OSI, TCP/IP, and how all these layers and services relate to that
 Dette projekt havde et krav om at være et distribueret system, bestående af flere services, som skulle kunne kommunikere med hinanden gennem en API. API'en er en kontrakt, som sørger for at flere systemer kan kommunikere med hinanden\cite{API}. Dette foregår gennem HTTP protokoller\cite{http}.
-Som navnet "distribueret system" hentyder til, så skal disse services ikke være afhængige af hinanden - de skal decouples\cite{decoupling} og destribueres. Der er flere muligheder når det kommer til design af sådan et system. Det kan designes ud fra en lagdelt arkitektur som OSI eller TCP/IP\cite{osi_tcp}, og gøre brug af MVC design-mønstret. I TCP/IP forekommer disse lag: Applikationslag, Transportlag, Netværkslag og Netværks interface.
+Som navnet "distribueret system" hentyder til, så skal disse services ikke være afhængige af hinanden - de skal decouples\cite{decoupling} og destribueres. Der er flere muligheder når det kommer til design af sådan et system. Det kan designes ud fra en lagdelt arkitektur som OSI eller TCP/IP\cite{osi_tcp}, og gøre brug af MVC design-mønstret\cite{MVC}. I TCP/IP forekommer disse lag: Applikationslag, Transportlag, Netværkslag og Netværks interface.
 Hvert lag tjener sit eget formål ift. resten af programmet.
 For at gennemføre dette er der blevet brugt en 3-lags arkitektur, som indeholder et præsentationslag, logik lag, og data lag.
 
@@ -38,7 +31,7 @@ For at gennemføre dette er der blevet brugt en 3-lags arkitektur, som indeholde
     \label{fig:architecture_model}
 \end{figure}
 
-I arkitektur modellen~\ref{fig:architecture_model} beskriver ellipserne klienter, servicer, library projecter eller lignende, blå værende frontend html/css/js, rød værende node.js\cite{nodejs} og grøn værende C\#.
+I arkitektur modellen~\ref{fig:architecture_model} beskriver ellipserne klienter, services, library projekter eller lignende. De blå værende frontend HTML/CSS/JS, røde værende Node.js\cite{nodejs} og grønne værende C\#.
 De stiplede linjer beskriver interprocess kommunikation, i dette diagram er det altid http forespørgsler eller forespørgsler til databasen.
 De fuldt optrukkede linjer mellem intraprocess kommunikation, er oftest når et runtime af en art henter kode ind fra en anden del af projektet, fx QWest.Api dll'en som henter ind fra QWest.DataAccess dll'en.
 Ud over dette, er modellen delt op i 2 dele, "trusted enviroment" og "untrusted enviroment". I "trusted enviroment" kan vi stole på at de forespørgsler vi modtager kommer fra os, så vi ikke behøver at tænke på ting som sikkerhed af autentificering. "untrusted enviroment" er hvor bruger input kommer fra, det kan være alt fra SQL injection angreb til helt et normalt bruger input.
@@ -79,10 +72,9 @@ QWest.Web er en frontend og brugerens klient, og hører derfor også under Clien
 \section{RESTful Web API}\label{sec:REST}
 Vores REST API, QWest.Api, er en service for sig selv, hvis primære job er at håndtere logikken for brugerens interaktion med platformens persistente data. Dette er derfor under Logic-tier. QWest.Api sørger blandt andet for, at vi er sikre på, at data der håndteres giver mening i forhold til domænet (fx at vi ikke opretter en gruppe, uden personer i gruppen) og checker om brugeren er autentificeret.
 
-QWest.Api bruger frameworket ASP.NET framework Web Api, sammen med OWIN\cite{Owin} til middleware og Json.NET til serializering og deserializering a JSON data.
+QWest.Api bruger frameworket ASP.NET framework Web Api, sammen med OWIN\cite{Owin} til middleware og Json.NET til serialisering og deserialisering a JSON data.
 
-QWest.Api bruger JSON som representation metoden, dette gøres eftersom at JSON er en af de mest populære måder af serializere data, ud over det er JSON både læseligt for mennesker sammentidig med at bruge mindre plads end andre menneskelæselig alternativer som XML. JSON er også bygget ind i javascript, hvilket gør det et næmt valg dag vores primære bruger af dette API kommer til at være QWest.Web frontend som er 100\% javascript at det skal køre i en browser
-% Cite JSON^^
+QWest.Api bruger JSON\cite{json} som representation metoden, dette gøres eftersom at JSON er en af de mest populære måder af serializere data, ud over det er JSON både læseligt for mennesker sammentidig med at bruge mindre plads end andre menneskelæselig alternativer som XML. JSON er også bygget ind i javascript, hvilket gør det et næmt valg dag vores primære bruger af dette API kommer til at være QWest.Web frontend som er 100\% javascript at det skal køre i en browser
 
 \section{Desktop Programming}\label{sec:deskProgramming}
 % This is the QWest.Admin stuff

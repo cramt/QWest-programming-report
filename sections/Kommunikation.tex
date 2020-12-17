@@ -1,9 +1,7 @@
 \chapter{Kommunikation}\label{ch:communication}
-% How does the communication work (between services, and between each element in the system)
-% Architecture structure 
-% "What happens in between architectural components?"
-% Client -> WCF (WSDL, SOAP, Proxies, HTTP, TCP, etc.)
-% DbLayer -> Database (Connections, SQL, deserializing data, etc.)
+Som nævnt i sektion \ref{sec:distSys} foregår kommunikationen i flere lag, herunder frontend (præsentationslag), logik lag som tilgåes gennem QWest.API, og et datalag som er databasen, der tilgåes af QWest.DataAccess. 
+Når programmet startes de forskellige services nævnt i sektion \ref{sec:servicesArc}. Der oprettes en proxy til QWest.Web 
+Bruger-klienten tilgås gennem en browser, som sender HTTP-requests til QWest.API, der så kalder controllers til DAO til databasen. Som nævnt i sektion \ref{sec:REST} bruges der Json.NET til serialisering og JSON data til deserialisering. Da projektet er gennemført med REST, er der ingen konstant forbindelse til databasen, men i stedet laves der kun forbindelser når databasen skal opdateres ud fra en brugeroperation. 
 
 \section{Sikkerhed}\label{sec:security}
 % Security
