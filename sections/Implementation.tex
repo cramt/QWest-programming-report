@@ -306,7 +306,6 @@ På kodestykket \ref{lst:post-controller} ses Post.Upload metoden nævnt tidlige
 public Task<Post> Add(string contents, User user, List<byte[]> images, int? locationId) {
     return AddUserAuthor(contents, (int)user.Id, images, locationId);
 }
-
 public async Task<Post> AddUserAuthor(string contents, int userId, List<byte[]> images, int? locationId) {
     string query = $@"
 DECLARE @post_id INT;
@@ -321,7 +320,6 @@ INSERT INTO images
 (image_blob)
 VALUES
 (@image_blob{i});
-
 INSERT INTO posts_images
 (posts_id, images_id)
 VALUES
@@ -349,10 +347,8 @@ WHERE posts.id = @post_id
         for (int i = 0; i < images.Count; i++) {
             stmt.Parameters.AddWithValue("@image_blob" + i, images[i]);
         }
-
         return (await stmt.ExecuteReaderAsync())
             .ToIterator(reader => new PostDbRep(reader));
-
     })).First().ToModel();
 }
 \end{minted}
@@ -364,7 +360,133 @@ Add metoden kalder AddUserAuthor som sørger for at opdatere databasen med beskr
 For at opsummere, kan det ses at denne implementation reflekterer arkitekturen af systemet ud fra figur \ref{fig:architecture_model}, da der sendes en request fra front-end, til QWest.Web, så til QWest.Api, som sender videre til QWest.DataAccess der både opretter opslaget i databasen, samt opretter et objekt ud fra Model klassen.
 
 \section{Testing}\label{sec:testing}
-%TODO: Write about a few important tests and show code
+\begin{figure}[h]
+    \includegraphics[width=1\textwidth]{testresults.PNG}
+    \caption{Testresultater \label{fig:testresults}}
+\end{figure}
+
+\begin{listing}
+    \begin{minted}
+    [
+        frame=lines,
+        framesep=2mm,
+        baselinestretch=1.2,
+        bgcolor=LightGray,
+        fontsize=\footnotesize,
+        linenos,
+        breaklines
+    ]{csharp}
+[TestFixture]
+class DaoPostSpec : DaoPostSpecSetupAndTearDown {
+    [Test]
+    public async Task AddsToDb() {
+        User user = new User("Lucca", "123456", "an@email.com");
+        await DAO.User.Add(user);
+        DateTime now = DateTime.Now;
+        Post post = await DAO.Post.Add("wassup", user, new List<byte[]>(), null);
+        Assert.NotNull(post.Id);
+        Assert.AreEqual(now.ToString("yyyy-MM-dd-HH-mm"), post.PostTime.ToString("yyyy-MM-dd-HH-mm"));
+        Assert.AreEqual("wassup", post.Contents);
+    }        
+    \end{minted}
+    \caption{AddsToDb test fra DaoPostSpec \label{fig:daoPostTest}}
+\end{listing}
+
+\begin{listing}[h]
+    \begin{minted}
+    [
+        frame=lines,
+        framesep=2mm,
+        baselinestretch=1.2,
+        bgcolor=LightGray,
+        fontsize=\footnotesize,
+        linenos,
+        breaklines
+    ]{csharp}
+public class DaoPostSpecSetupAndTearDown {
+    [SetUp]
+    [OneTimeTearDown]
+    public void Setup() {
+        Utils.CleanUp();
+    }
+}
+    \end{minted}
+    \caption{Setup og TearDown-metode\label{fig:setupAndTearDown}}
+\end{listing}
+
+\begin{listing}[p]
+    \begin{minted}
+    [
+        frame=lines,
+        framesep=2mm,
+        baselinestretch=1.2,
+        bgcolor=LightGray,
+        fontsize=\footnotesize,
+        linenos,
+        breaklines
+    ]{csharp}
+public static class Utils {
+    public static void CleanUp(bool deleteGeopoliticalData = false) {
+        List<string> toDelete = new string[] {
+            "progress_maps_locations",
+            "users_friendships",
+            "users_friendship_requests",
+            "users_groups",
+            "posts_images",
+            "posts",
+            "groups",
+            "password_reset_tokens",
+            "users",
+            "images",
+            "progress_maps",
+        }.ToList();
+        if (deleteGeopoliticalData) {
+            toDelete.Add("geopolitical_location");
+        }
+        ConnectionWrapper.Instance.Use(string.Join(" ", toDelete.Select(x => $"DELETE FROM {x};")), stmt => stmt.ExecuteNonQueryAsync()).Wait();
+    }
+}
+    \end{minted}
+    \caption{CleanUp-metode i DataAccessTests.Utils\label{fig:cleanup}}
+\end{listing}
+
+\begin{listing}[h]
+    \begin{minted}
+    [
+        frame=lines,
+        framesep=2mm,
+        baselinestretch=1.2,
+        bgcolor=LightGray,
+        fontsize=\footnotesize,
+        linenos,
+        breaklines        
+    ]{csharp}
+[TestCase("an@email.com")]
+[TestCase("example@example.com")]
+[TestCase("alexandra_is@cute.com")]
+public async Task GetsFromDbByEmail(string email) {
+    User user = new User("Lucca", "123456", email);
+    await DAO.User.Add(user);
+    User fetched = await DAO.User.GetByEmail(email);
+    Assert.AreEqual(user.Id, fetched.Id);
+}
+    \end{minted}
+    \caption{Eksempel på brug af \texttt{TestCase}\label{fig:testCaseUsage}}
+\end{listing}
+
+I dette projekt er der gjort brug af softwaretests med NUnit 3\cite{nunit}. Disse tests har to formål: at dokumentere koden og hvad den kan, samt at sikre at koden virker. Vi har primært udviklet database-integrationstests, idet vores DAO-metoder indeholder meget kompleks logik i forhold til hvilke colonner og rækker, der bliver hentet fra databasen, og hvordan resultaterne bliver omdannet til model-objekter.
+
+Vores tests følger primært AAA-mønstret, hvori enhver givet test har tre trin \cite{ArrangeActAssert}:
+\begin{itemize}
+    \item \textbf{Arrange:} Sæt testens prækonditioner op.
+    \item \textbf{Act:} Udfør handlingen der testes på.
+    \item \textbf{Assert:} Påvis at det forventede resultat er opnået.
+\end{itemize}
+Kodeliste \ref{fig:daoPostTest} viser et eksempel på en test. Denne metode tester, hvorvidt en post bliver tilføjet til databasen. I arrange-fasen bliver en bruger oprettet i databasen, idet en post skal have en associeret bruger. Dernæst, i act-fasen, bliver en post tilføjet til databasen. Til sidst, i assert-fasen, tjekkes det, om posten er blevet tilføjet til databasen. Det bør her noteres at posten ikke bliver hentet igen \textit{fra} databasen. Dette er nemlig forbeholdt andre tests.
+
+Det fulde testsuite kan ses i figur \ref{fig:testresults}. Individuelle tests bliver ikke vist, fordi der er mere end 50 af dem. I stedet bliver hver \textit{test fixture} vist, som er NUnits terminologi for en testklasse. Nogle af disse testklasser har underklasser, som vises med et '+'-tegn på billedet. Metoderne er navngivet efter en konvention om, at de skal være sætninger, der forklarer hvad den forventede opførsel er. Før hver test, samt efter sidste test i hver testklasse i DAO-laget, kaldes en statisk metode, der sørger for, at alle relevante tabeller i databasen har fået deres rækker slettet. På den måde sørger vi for, at databasen er i samme tilstand i hver test, og at tests ikke har indflydelse på hindanden. Kodeliste \ref{fig:setupAndTearDown} viser et eksempel på, hvordan metoden bliver brugt, og kodeliste \ref{fig:cleanup} viser selve metoden. Metoden tager et boolean argument som bestemmer hvorvidt geopolitisk data skal slettes og genindsættes fra backup. Dette er fordi dette er en meget tidskrævende process, og derfor bør det kun gøres i tests, der har med denne slags data at gøre.
+
+I enkelte tilfælde er der også gjort brug af NUnits \texttt{TestCase}-annotation. Et eksempel på dette kan ses i kodeliste \ref{fig:testCaseUsage}. Med denne annotation kan man give sin testmetode en parameterliste. NUnits testkører kan dermed passere argumenter til testmetoden ved hjælp af \texttt{TestCase}-annotationen, så man dermed kan køre sin test med forskellige argumenter uden at skulle skrive flere forskellige tests, der gør næsten det samme.
 
 \section{Webscraping af geopolitisk data}\label{sec:datascraping}
 Det geopolitiske data QWest projected omhandler sig om er bedst beskrevet af ISO 3166 standarden \cite{ISO3166}, primært ISO 3166-1 og ISO 3166-2, der er dog et stort problem ved dette data, ISO 3166-1 er perfect for vores use-case men ISO 3166-2 har problemmet med at alle navne på lande subdivisions are lokalle navne i det lokalle sprog, dette virker utrolig dårligt i QWest's situation eftersom at de rejsende ikke nødvendighvis ved hvad de lokalle navn for deres lokation er, og kun kender det engelske navn, det ville være en forfærdelig bruger oplevelse for fx en amerikans rejsende som to på ud og rejse i Nordjylland, men når han bruger vores applikation kan han ikke finde "Northern Denmark Region" hvilket er hvad denne region hedder for ham.
