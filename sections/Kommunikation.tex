@@ -1,34 +1,25 @@
-%This section is about communication in the application
+\chapter{Kommunikation}\label{ch:communication}
 % How does the communication work (between services, and between each element in the system)
 % Architecture structure 
 % "What happens in between architectural components?"
 % Client -> WCF (WSDL, SOAP, Proxies, HTTP, TCP, etc.)
 % DbLayer -> Database (Connections, SQL, deserializing data, etc.)
-%%%%%%%%%%%%%%%%%%%%%
+
+\section{Sikkerhed}\label{sec:security}
 % Security
 % Identify security problems in the application, and figure out solutions. Explain identified problems, and possible solutions. 
 % Keywords: SSL/TLS, Hashing, Salting, XSS, SQL Injection, CSRF, Overposting(for MVC), Man in the middle attacks, DDOS, Authentication
-%%%%%%%%%%%%%%%%%%
-% Transactions
-% Identify places in the application where we need transactions
-% How do we build our transactions? Isolation levels?
-% Do we need distributed transactions?
-% Implementation details welcome
-%%%%%%%%%%%%%%%%%%
-% Protocols
-% Choice of communication protocol
-% What protocols do you use, how do they work, and why did you chose that protocol?
-% HTTP, TCP, UDP, PIPES
-\chapter{Kommunikation}\label{ch:communication}
-
-
-\section{Sikkerhed}\label{sec:security}
 HTTPS vil være den primærer måde at sikre os at bruger input er sikkert enkrypteret mens de bliver transporeret til QWest.Api, .NET framework skulle have support for HTTPS. \cite{DotNetFrameworkSSL} dog har der ikke været arbejde til at sætte dette op eftersom at vi ikke ejer it SSL certificate.
 
 For at sikre vores brugerer mod leaking af deres passwords hvis et data breach sker hasher og salter vi alle brugeres passwords \texttt{Rfc2898DeriveBytes} \cite{Rfc2898DeriveBytes} til dette, denne klasse bruger SHA1 en utrolig ikke sikker hashing metode som vi burde ændre snarest muligt \cite{HowsecureisSHA1} til BCrypt \cite{BCrypt} eller lignende.
 
 \section{Transactions}\label{sec:transactions}
-
+% Transactions
+% Identify places in the application where we need transactions
+% How do we build our transactions? Isolation levels?
+% Do we need distributed transactions?
+% ACID, Parallelism, Async/Await,
+% Implementation details welcome
 
 \section{Protokoller}\label{sec:protocols}
 Kommunikationen mellem alle services'ne i QWest er http requests, med untagelse af kommunikationen med databasen fra QWest.DataAccess. kommunikationen fra vores frontend web klient til QWest.Api (endten direkte eller proxiet gennem QWest.Web) skal selfølgelig være http eftersom at der ikke er webstandarder for andre muligheder, den eneste untagelse værende WebSockets, dog er dette ikke usecasen for WebSockets og WebSockets har ikke lige så stor support blandt ældrere browsere som en help normal http request har. Denne kommunikationen bruger igen JSON eftersom at frontend browser javascript ikke supporter mange andre måder at serializere og deserializere data på
