@@ -1,20 +1,7 @@
-% Implementation
-% Remember code snippets
-% Services
-% Authentication
-% Transactions
-% Testing
-%%% what testing framework(s) did we use and why?
-%%% Reasoning over these 
-%%% Choice and reason for choice
-%%% Results from testing
-% Exception handling
-% Performance
 \chapter{Implementation}\label{ch:implementation}
 I dette kapitel vil der blive beskrevet hvordan arkitekturen og features er implementeret. Dette vil omfatte Database, DAO, Services, Web, tests, og det landkort der er brugt til at afkryde lokationer.
 
 \section{Database og persistence}\label{sec:database}
-
 \subsection{SQL og DAO}\label{sec:sqlOgDao}
 Eftersom der i dette projekt bruges ADO.NET direkte, uden nogen ORM eller lignende, betyder det at vi skal skrive vores egne SQL og DAO metoder. Måden dette er implementeret på er ved brug af DAO interfaces og statiske properties, som hver returnerer den tilsvarende interface. Disse interfaces, der beskriver metoderne som forventer en specifik DAO metode, og ligesom andre C\# interfaces er dette uafhængigt af den implementerede logik.
 Denne metode har 2 primære fordele. Den ene fordel er, at vi nemt kan oprette mocking-klasser af vores DAO-klasser. Mocking-klasserne vil accepteres som DAO-klasser i et unit testing miljø. Et eksempel på dette kan ses i \texttt{ImageControllerSpec} \ref{lst:imageControllerSpec}.
@@ -354,7 +341,6 @@ WHERE posts.id = @post_id
 \end{minted}
 \caption{Implementationen af Add metoden i PostImpl.\label{lst:post-impl}}
 \end{listing}
-%Not sure what to say about the code written above, but hey it works.
 Add metoden kalder AddUserAuthor som sørger for at opdatere databasen med beskrivelse, bruger id, billede, lokation, og timestamp. Når alle værdierne er lagt i databasen bruges \texttt{ToModel()} metoden til at oprette et objekt af opslaget som Model.Post.
 
 For at opsummere, kan det ses at denne implementation reflekterer arkitekturen af systemet ud fra figur \ref{fig:architecture_model}, da der sendes en request fra front-end, til QWest.Web, så til QWest.Api, som sender videre til QWest.DataAccess der både opretter opslaget i databasen, samt opretter et objekt ud fra Model klassen.

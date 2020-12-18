@@ -13,14 +13,6 @@
 % Middleware
 %%% What middleware are we using? What problems do we solve with the middleware
 %%% (de)serializing JSON?
-\chapter{Klienter og Middelware}\label{ch:clientMiddleware}
+\chapter{Middelware}\label{ch:middleware}
 
-
-\section{Desktop klient}\label{sec:desktopClient}
-
-
-\section{Web klient}\label{sec:webClient}
-
-
-\section{Middleware}\label{sec:middleware}
 QWest.Web bruger Owin \cite{Owin} til at leverer vores middleware. Det eneste stykke middleware skrevet manuelt er \texttt{QWest.Api.AuthenticationMiddleware} klassen, middleware'en checker om der er en authentikations token med i requestsen og hvis der er, hender den brugen som den token referer til og lægger den i OwinContext'en. 
