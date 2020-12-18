@@ -25,6 +25,23 @@ For at sikre vores brugere mod leaking af deres passwords, hvis der sker et data
 % Do we need distributed transactions?
 % ACID, Parallelism, Async/Await,
 % Implementation details welcome
+A transaction in SQL række af operationer hvor enten alle sammen skal kunne eksekveres eller også skal ingen af dem eksekveres, det klassiske eksempel hvor dette er nødvendigt er banks transaktioner hvor en person sender penge til en anden person, i dette scenarie vil mængden blive trukket fra personen der senders konto og lægt til personen der sendes tils konto, dette er dog 2 operationer so hvis at databasen dør når den første operation er udført men ikke den anden så har penge forsvundet fra databasen, hvis operationerne skette i omvendt rækkefølge hville penge insættet på en konto men ikke komme nogle stæder fra. 
+
+Løsningen på dette eksempel er SQL transactions, SQL transactions søger for at alle operationer der sker i transaction'en er afhængig af hindanden og enten af hele transaction'en udført eller intet af den er. Transaction'er er ACID, ACID et akronym som står for, atomic, consistent, isolated, durable.
+
+\subsection{ACID: Atomic}\label{sec:acidAtomic}
+Atomic betyder at transaction'en ikke kan splittes op i mindre dele, en transaction er et individuelt "unit of work", i bank eksemplet er dette utrolig relevant for at penge ikke forsvinder eller bliver skabt ud af ingenting. 
+
+Dette betyder også at der aldrig er tidspunkt hvor den første operation er skrevet til databasen men operation 2 har ikke, 1 individuelt aktion sker
+
+\subsection{ACID: Consistent}\label{sec:acidConsistent}
+Consistent betyder at reglerne sat op i SQL databasen (så som unqiue constraints, not null constraints og foreign keys) skal overholdes. Transactions gør ikke noget specielt for at overholde dette eftersom at det individuelle sql statements overholder det eftersom at det er sql statements.
+
+\subsection{ACID: Isolated}\label{sec:acidIsolated}
+Isolated betyder at SQL transaction'er ikke skal være afhængige af andre SQL transaction'er.
+
+\subsection{ACID: Durable}\label{sec:acidDurable}
+Durable betyder at når SQL transaction'en er 100\% fulført skal der være persistence på den data som blevet updateret/slettet/insat
 
 \section{Protokoller}\label{sec:protocols}
 Kommunikationen mellem alle services'ne i QWest er http requests, med untagelse af kommunikationen med databasen fra QWest.DataAccess. kommunikationen fra vores frontend web klient til QWest.Api (endten direkte eller proxiet gennem QWest.Web) skal selfølgelig være http eftersom at der ikke er webstandarder for andre muligheder, den eneste untagelse værende WebSockets, dog er dette ikke usecasen for WebSockets og WebSockets har ikke lige så stor support blandt ældrere browsere som en help normal http request har. Denne kommunikationen bruger igen JSON eftersom at frontend browser javascript ikke supporter mange andre måder at serializere og deserializere data på
