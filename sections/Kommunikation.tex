@@ -53,6 +53,7 @@ WHERE id = @post_id";
 % Do we need distributed transactions?
 % ACID, Parallelism, Async/Await,
 % Implementation details welcome
+% Transactions and distributed systems from \cite{DistributedSystems}
 
 \section{Protokoller}\label{sec:protocols}
 Kommunikationen mellem alle services'ne i QWest er http requests, med untagelse af kommunikationen med databasen fra QWest.DataAccess. kommunikationen fra vores frontend web klient til QWest.Api (endten direkte eller proxiet gennem QWest.Web) skal selfølgelig være http eftersom at der ikke er webstandarder for andre muligheder, den eneste untagelse værende WebSockets, dog er dette ikke usecasen for WebSockets og WebSockets har ikke lige så stor support blandt ældrere browsere som en help normal http request har. Denne kommunikationen bruger igen JSON eftersom at frontend browser javascript ikke supporter mange andre måder at serializere og deserializere data på
