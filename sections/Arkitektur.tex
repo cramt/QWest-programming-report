@@ -80,7 +80,7 @@ QWest.Api bruger JSON\cite{json} som representation metoden, dette gøres efters
 Desktop applikationen til QWest kan benyttes ved at starte programmet med QWest.Admin. Der åbnes et Windows Forms \cite{WinForms} vindue, hvor der kan tilgås et administrator panel til redigering af alle lande på QWest's progress map. Dette vindue kan ses på figur \ref{fig:admin_panel}. Formålet er, at såfremt et land skifter navn, eller der er subdivisions som skal opdateres, så kan det gøres manuelt med administrator panelet. Disse navne og subdivisions kunne opdateres automatisk, men da det kunne tage dagevis at scrape al data fra Wikipedia, skulle det måske kun ske én gang om året. Det er muligt med administrator panelet at tildele ekstra navne til lande, eksempelvis kunne Germany få tildelt "Tyskland" som ekstra navn, sådan at det også kan findes på dansk. 
 Desktop applikationen har været meget nedprioriteret i dette projekt, da der har været mere fokus på hvilke features en almindelig bruger skulle have tilgængelig, hvordan brugeroplevelsen skulle være, samt hvordan samtidighedsproblemet fra brugernes side kunne løses.
 
-\section{Database}\label{sec:database}
+\section{Database}\label{sec:databaseACR}
 Det sidste tier i 3-tier arkitekturen er selvfølgelig databasen. Databasen til projektet er oprettet med MSSQL\cite{MSSQL}. Til trods for at der findes andre SQL sprog end Microsoft's, blev MSSQL valgt fordi det er det vi i udviklingsteamet kender bedst til. Det ville være risikabelt at bruge en ubestemt mængde af tid på at sætte sig ind i et andet SQL system - især når vi i gruppen allerede har en god forståelse for MSSQL og skolen tildeler en gratis MSSQL server. Til gengæld er der taget højde for, at det skulle være muligt at implementere et andet SQL system - dette er gjort med DAO'er. DAO\cite{dao} designmønstret er gennemgående i projektet og forefindes i koden under QWest.DataAccess. Selve MSSQL implementationen findes i Mssql mappen. Der er valgt at bruge disse DAO og SQLConnections fremfor ORM %Yea but why?
 
 \begin{figure}
@@ -93,9 +93,9 @@ Det sidste tier i 3-tier arkitekturen er selvfølgelig databasen. Databasen til 
 
 I domæne modellen, figur \ref{fig:domain_model}, ses forholdene mellem klasserne, som er belæg for de forskellige sammenkoblinger af tabellerne så modellerne afspejler hinanden. Databasen opfylder ikke samtlige krav til BCNF\cite{bcnf}. \texttt{name} på \texttt{geopolitical\_locations} og manglen på en seperat \texttt{subregions} tabel til \texttt{geopolitical\_location}. \texttt{name} er ikke atomisk, og kan indeholde flere navne på det samme land. Dette skyldes at lande som regel har flere officielle navne. Eksempelvis kan Storbrittanien hedde "United Kingdom", "Storbrittanien" og "UK", men stadig være det samme på alle andre områder. Såfremt et land har flere officielle navne, så lagres de i ét felt da det beskriver den samme tuple.
 
-\section{Web design}\label{sec:webdesign}
+\section{Web design}\label{sec:webdesignACR}
 Web-klienten til brugeren kan tilgås igennem en browser. Det er muligt at få adgang til sin profil ved at oprette sig selv som bruger og logge ind. Der bliver så tildelt en session-cookie, som bruges til at sørge for at brugeren stadig er logget ind, og begrænser også adgang til forskellige steder i systemet. 
-\subsection{Back-end and logic}\label{sec:backend}
+\subsection{Back-end and logic}\label{sec:backendACR}
 Logikken er skrevet i Javascript og JQuery, som håndtere alle funktioner på hjemmesiden. Der bruges bl.a. Javascript og JQuery til dynamisk at indsætte diverse knapper, venner, grupper, og opslag, ud fra informationerne lagret i databasen. Det er altså Javascript og JQuery som sørger for, at information fra front-end kan blive sendt til back-end og databasen, ved at kalde QWest.Api som indeholder de forskellige Controller-klasser. 
-\subsection{Front-end and usability}\label{sec:frontend}
+\subsection{Front-end and usability}\label{sec:frontendACR}
 Selve front-end er designet ud fra enkelte principper: Top og bund af hver subdomæne skal være nogenlunde ens, knapper skal være store og tydelige, og siderne skal kunne vises på forskellige skærmstørrelser og devices. Al styling er foregået med CSS. Hvordan alt dette er implementeret vil gennemgås i implementation afsnittet.
