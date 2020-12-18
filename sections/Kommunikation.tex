@@ -14,6 +14,7 @@ Bruger-klienten tilgås gennem en browser, som sender HTTP-requests til QWest.AP
 HTTPS vil være den primærer måde at sikre os at bruger input er sikkert enkrypteret mens de bliver transporeret til QWest.Api, .NET framework skulle have support for HTTPS. \cite{DotNetFrameworkSSL} dog har der ikke været arbejde til at sætte dette op eftersom at vi ikke ejer it SSL certificate.
 Måden autentificering er implementeret i systemet, er gennem login siden. Man skal være logget ind som bruger med brugernavn og password for at kunne tilgå andre dele af systemet. Hver file-path som kan tilgås på hjemmesiden, checker om det er den korrekte bruger der er logget ind. Hvis ikke, så sendes brugeren til forsiden hvor de kan logge ind eller oprette bruger.
 For at sikre vores brugere mod leaking af deres passwords, hvis der sker et data breach, hasher og salter vi alle brugeres passwords. Der bruges \texttt{Rfc2898DeriveBytes} \cite{Rfc2898DeriveBytes} til dette. Denne klasse bruger SHA1, som er ikke er en optimal sikker hashing metode, hvilket burde ændres i næste iteration af projektet \cite{HowsecureisSHA1} til BCrypt \cite{BCrypt} eller lignende.
+
 Når data skal lægges i databasen, bruges der SQL parametre for at undgå SQL injections. Som det kan ses i kodestykket \ref{lst:SQLinjection}, så bruges der en parametriseret SQL query string, hvor argumenterne metoden får placeres i de tilsvarende SQL parametre.
 
 \begin{listing}[p]
@@ -71,6 +72,31 @@ Isolated betyder at SQL transaction'er ikke skal være afhængige af andre SQL t
 
 \subsection{ACID: Durable}\label{sec:acidDurable}
 Durable betyder at når SQL transaction'en er 100\% fulført skal der være persistence på den data som blevet updateret/slettet/insat
+
+\subsection{Transaction'er i QWest}\label{sec:transactionQwest}
+I QWest.DataAccess.ConnectionWrapper har vi hjælpemetoden \texttt{Use} \ref{lst:connectionWrapperUse}, denne metode åbner en forbindelse til databasen, og starter en \texttt{SQLCommand} baseret på det første argument i metoden, SQL query'en. en \texttt{SQLCommand} er automatisk i en transaction lige meget hvor mange query'er der er i query strengen. Det andet argument er en funktionen givet af kalderen, denne bliver eksekveret med \texttt{SQLComamnd}'en og så snart den er færdig lukkes forbindelsen. Et eksempel på brugen af Use metode kan findes i Update DAO metoden for Posts \ref{lst:SQLinjection}. Inde i scopet af funktionen givet til Use metoden er forbindelsen åben, uden for er den ikke.
+
+\begin{listing}[p]
+    \begin{minted}
+    [
+        frame=lines,
+        framesep=2mm,
+        baselinestretch=1.2,
+        bgcolor=LightGray,
+        fontsize=\footnotesize,
+        linenos,
+        breaklines
+    ]{csharp}
+public async Task<T> Use<T>(string query, Func<SqlCommand, Task<T>> func) {
+    var conn = Connection;
+    conn.Open();
+    T result = await func(conn.CreateCommand(query));
+    conn.Close();
+    return result;
+}
+\end{minted}
+    \caption{QWest.DataAcess.ConnectionWrapper.Use\label{lst:connectionWrapperUse}}
+\end{listing}
 
 \section{Protokoller}\label{sec:protocols}
 Kommunikationen mellem alle services'ne i QWest er http requests, med untagelse af kommunikationen med databasen fra QWest.DataAccess. kommunikationen fra vores frontend web klient til QWest.Api (endten direkte eller proxiet gennem QWest.Web) skal selfølgelig være http eftersom at der ikke er webstandarder for andre muligheder, den eneste untagelse værende WebSockets, dog er dette ikke usecasen for WebSockets og WebSockets har ikke lige så stor support blandt ældrere browsere som en help normal http request har. Denne kommunikationen bruger igen JSON eftersom at frontend browser javascript ikke supporter mange andre måder at serializere og deserializere data på
