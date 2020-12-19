@@ -1,21 +1,21 @@
 \chapter{Kommunikation}\label{ch:communication}
-Som nævnt i sektion \ref{sec:distSys} foregår kommunikationen i flere lag, herunder frontend (præsentationslag), logik lag som tilgåes gennem QWest.API, og et datalag som er databasen, der tilgåes af QWest.DataAccess. 
-Når programmet startes de forskellige services nævnt i sektion \ref{sec:servicesArc}. QWest.Web oprettes som en proxy der sender HTTP forespørgsler, og hele opstartsprocessen kan ses på figur \ref{fig:startup_log}.
+Som nævnt i sektion \ref{sec:distSys} foregår kommunikationen i flere lag, herunder frontend (præsentationslag), logik lag som tilgås gennem QWest.API, og et datalag som er databasen, der tilgås af QWest.DataAccess. 
+Når programmet startes de forskellige services nævnt i sektion \ref{sec:servicesArc}. QWest.Web oprettes som en proxy der sender HTTP Requests \cite{DistributedSystems}, og hele opstartsprocessen kan ses på figur \ref{fig:startup_log}.
 
-\begin{figure}
+\begin{figure}[h]
     \includegraphics[width=\linewidth]{services_run_log.png}
     \caption{QWest.Services.Run opstarts log.}
     \label{fig:startup_log}
 \end{figure}
 
-Bruger-klienten tilgås gennem en browser, som sender HTTP-requests til QWest.API, der så kalder controllers til DAO til databasen. Som nævnt i sektion \ref{sec:REST} bruges der Json.NET til serialisering og JSON data til deserialisering. Da projektet er gennemført med REST, er der ingen konstant forbindelse til databasen, men i stedet laves der kun forbindelser når databasen skal opdateres ud fra en brugeroperation. 
+Bruger-klienten tilgås gennem en browser, som sender HTTP Requests til QWest.API, der så kalder controllers til DAO til databasen. Som nævnt i sektion \ref{sec:REST} bruges der Json.NET til serialisering og JSON data til deserialisering. Da projektet er gennemført med REST, er der ingen konstant forbindelse til databasen, men i stedet laves der kun forbindelser når databasen skal opdateres ud fra en brugeroperation. 
 
 \section{Sikkerhed}\label{sec:security}
-HTTPS vil være den primærer måde at sikre os at bruger input er sikkert enkrypteret mens de bliver transporeret til QWest.Api, .NET framework skulle have support for HTTPS. \cite{DotNetFrameworkSSL} dog har der ikke været arbejde til at sætte dette op eftersom at vi ikke ejer it SSL certificate.
-Måden autentificering er implementeret i systemet, er gennem login siden. Man skal være logget ind som bruger med brugernavn og password for at kunne tilgå andre dele af systemet. Hver file-path som kan tilgås på hjemmesiden, checker om det er den korrekte bruger der er logget ind. Hvis ikke, så sendes brugeren til forsiden hvor de kan logge ind eller oprette bruger.
-For at sikre vores brugere mod leaking af deres passwords, hvis der sker et data breach, hasher og salter vi alle brugeres passwords. Der bruges \texttt{Rfc2898DeriveBytes} \cite{Rfc2898DeriveBytes} til dette. Denne klasse bruger SHA1, som er ikke er en optimal sikker hashing metode, hvilket burde ændres i næste iteration af projektet \cite{HowsecureisSHA1} til BCrypt \cite{BCrypt} eller lignende.
+HTTPS vil være den primære måde at sikre os, at bruger input er sikkert krypteret mens de bliver transporeret til QWest.Api, .NET framework skulle have support for HTTPS. \cite{DotNetFrameworkSSL} Der er ikke lagt arbejde i at sætte dette op, eftersom vi ikke ejer it SSL certificate. 
+Måden autentificering er implementeret i systemet, er gennem login siden. Man skal være logget ind som bruger med brugernavn og password, for at kunne tilgå andre dele af systemet. Hver file-path som kan tilgås på hjemmesiden, checker om det er den korrekte bruger der er logget ind. Hvis ikke, så sendes brugeren til forsiden, hvor de kan logge ind eller oprette bruger.
+For at sikre vores brugere mod leaking af deres passwords, såfremt der sker et data breach, hasher og salter vi alle brugeres passwords. Der bruges \texttt{Rfc2898DeriveBytes} \cite{Rfc2898DeriveBytes} til dette. Denne klasse bruger SHA1, som ikke er en optimal sikker hashing metode, hvilket burde ændres i næste iteration af projektet \cite{HowsecureisSHA1} til BCrypt \cite{BCrypt} eller lignende.
 
-Når data skal lægges i databasen, bruges der SQL parametre for at undgå SQL injections. Som det kan ses i kodestykket \ref{lst:SQLinjection}, så bruges der en parametriseret SQL query string, hvor argumenterne metoden får placeres i de tilsvarende SQL parametre.
+Når data skal lagres i databasen, bruges der SQL parametre for at undgå SQL injections. Som det kan ses i kodestykket \ref{lst:SQLinjection}, så bruges der en parametriseret SQL query string, hvor argumenterne metoden tager imod, placeres i de tilsvarende SQL parametre.
 
 \begin{listing}[p]
     \begin{minted}
@@ -55,26 +55,26 @@ WHERE id = @post_id";
 % ACID, Parallelism, Async/Await,
 % Implementation details welcome
 % Transactions and distributed systems from \cite{DistributedSystems}
-A transaction in SQL række af operationer hvor enten alle sammen skal kunne eksekveres eller også skal ingen af dem eksekveres, det klassiske eksempel hvor dette er nødvendigt er banks transaktioner hvor en person sender penge til en anden person, i dette scenarie vil mængden blive trukket fra personen der senders konto og lægt til personen der sendes tils konto, dette er dog 2 operationer so hvis at databasen dør når den første operation er udført men ikke den anden så har penge forsvundet fra databasen, hvis operationerne skette i omvendt rækkefølge hville penge insættet på en konto men ikke komme nogle stæder fra. 
+En SQL Transaction \cite{sqltransaction} består af en række operationer, hvor enten alle sammen skal kunne eksekveres eller også skal ingen af dem eksekveres. Det klassiske eksempel hvor dette er nødvendigt er bank-transaktioner, hvor en person sender penge til en anden person. I dette scenarie vil pengene blive trukket fra kontoen på personen der sender pengene og lagt til modtagerens konto. Dette udføres af 2 operationer, så hvis databasen bliver utilgængelig når den første operation er udført men ikke den anden operation, så er pengene forsvundet fra databasen. Hvis operationerne skete i omvendt rækkefølge ville pengene blive sat ind på en konto, men ikke komme nogle steder fra. 
 
-Løsningen på dette eksempel er SQL transactions, SQL transactions søger for at alle operationer der sker i transaction'en er afhængig af hindanden og enten af hele transaction'en udført eller intet af den er. Transaction'er er ACID, ACID et akronym som står for, atomic, consistent, isolated, durable.
+Løsningen på dette eksempel er SQL Transactions. SQL Transactions sørger for, at alle operationer, der sker i transaktionen, er afhængige af hinanden, sådan at enten vil hele transaktionen blive udført eller også bliver intet udført. I denne kontekst er der nogle krav der kan overholdes. ACID, som er et akronym der står for, Atomicity, Consistency, Isolation og Durability, beskriver en række krav, som omhandler fire hovedegenskaber en transaktion har. \cite{acid}
 
-\subsection{ACID: Atomic}\label{sec:acidAtomic}
-Atomic betyder at transaction'en ikke kan splittes op i mindre dele, en transaction er et individuelt "unit of work", i bank eksemplet er dette utrolig relevant for at penge ikke forsvinder eller bliver skabt ud af ingenting. 
+\subsection{ACID: Atomicity}\label{sec:acidAtomic}
+Atomicity betyder at transaction'en ikke kan splittes op i mindre dele. En transaction er et individuelt "unit of work" og skal være alt eller intet. \cite{DistributedSystems} I bank eksemplet er dette meget relevant, det det har indflydelse på at penge ikke forsvinder eller bliver skabt ud af ingenting. 
 
-Dette betyder også at der aldrig er tidspunkt hvor den første operation er skrevet til databasen men operation 2 har ikke, 1 individuelt aktion sker
+Dette betyder også, at der aldrig er tidspunkt, hvor den første operation er skrevet til databasen, men anden operation ikke har. Der er kun én aktion.
 
-\subsection{ACID: Consistent}\label{sec:acidConsistent}
-Consistent betyder at reglerne sat op i SQL databasen (så som unqiue constraints, not null constraints og foreign keys) skal overholdes. Transactions gør ikke noget specielt for at overholde dette eftersom at det individuelle sql statements overholder det eftersom at det er sql statements.
+\subsection{ACID: Consistency}\label{sec:acidConsistent}
+Consistency betyder at reglerne sat op i SQL databasen (såsom \texit{unique constraints}, \texit{not null constraints} og \texit{foreign keys} \cite{SqlConstraints}) skal overholdes. Det vil sige at værdien der skal ændres skal være samme værdi fra start til slut af transaktionen.
 
-\subsection{ACID: Isolated}\label{sec:acidIsolated}
-Isolated betyder at SQL transaction'er ikke skal være afhængige af andre SQL transaction'er.
+\subsection{ACID: Isolation}\label{sec:acidIsolated}
+Isolation betyder at SQL Transactions ikke skal være afhængige af andre SQL Transactions.
 
-\subsection{ACID: Durable}\label{sec:acidDurable}
-Durable betyder at når SQL transaction'en er 100\% fulført skal der være persistence på den data som blevet updateret/slettet/insat
+\subsection{ACID: Durability}\label{sec:acidDurable}
+Durability betyder at når SQL transaktionen er fuldført, så skal der være persistens på den data, som er blevet opdateret/slettet/indsat.
 
 \subsection{Transaction'er i QWest}\label{sec:transactionQwest}
-I QWest.DataAccess.ConnectionWrapper har vi hjælpemetoden \texttt{Use} \ref{lst:connectionWrapperUse}, denne metode åbner en forbindelse til databasen, og starter en \texttt{SQLCommand} baseret på det første argument i metoden, SQL query'en. en \texttt{SQLCommand} er automatisk i en transaction lige meget hvor mange query'er der er i query strengen. Det andet argument er en funktionen givet af kalderen, denne bliver eksekveret med \texttt{SQLComamnd}'en og så snart den er færdig lukkes forbindelsen. Et eksempel på brugen af Use metode kan findes i Update DAO metoden for Posts \ref{lst:SQLinjection}. Inde i scopet af funktionen givet til Use metoden er forbindelsen åben, uden for er den ikke.
+I QWest.DataAccess.ConnectionWrapper findes hjælpemetoden \texttt{Use} \ref{lst:connectionWrapperUse}. Denne metode åbner en forbindelse til databasen, og starter en \texttt{SQLCommand} baseret på det første argument i metoden; en SQL query. En \texttt{SQLCommand} er som udgangspunkt en del af en transaktion, lige meget hvor mange queries der er i query-strengen. Det andet argument er en funktion, givet af metoden som kaldes, der bliver eksekveret med en \texttt{SQLComamnd}. Så snart den er fuldført lukkes forbindelsen. Et eksempel på brugen af Use-metoden kan findes i \texttt{Update(Post post)} metoden for \texttt{QWest.DataAccess.DAOPost} på kodelisten \ref{lst:SQLinjection}. Inde i scopet af funktionen givet til Use-metoden er forbindelsen åben. Så snart programmet kommer udenfor scope lukkes forbindelsen.
 
 \begin{listing}[p]
     \begin{minted}
@@ -99,12 +99,12 @@ public async Task<T> Use<T>(string query, Func<SqlCommand, Task<T>> func) {
 \end{listing}
 
 \section{Protokoller}\label{sec:protocols}
-Kommunikationen mellem alle services'ne i QWest er http requests, med untagelse af kommunikationen med databasen fra QWest.DataAccess. kommunikationen fra vores frontend web klient til QWest.Api (endten direkte eller proxiet gennem QWest.Web) skal selfølgelig være http eftersom at der ikke er webstandarder for andre muligheder, den eneste untagelse værende WebSockets, dog er dette ikke usecasen for WebSockets og WebSockets har ikke lige så stor support blandt ældrere browsere som en help normal http request har. Denne kommunikationen bruger igen JSON eftersom at frontend browser javascript ikke supporter mange andre måder at serializere og deserializere data på
+Kommunikationen mellem alle services i QWest er HTTP-requests, med untagelse af kommunikationen med databasen fra \texttt{QWest.DataAccess}. Kommunikationen fra frontend web klienten til \texttt{QWest.Api} (enten direkte eller med proxy gennem \texttt{QWest.Web}) skal selvfølgelig være HTTP, eftersom der ikke er nogle webstandarder for andre muligheder. Den eneste untagelse er WebSockets, men dette projekt har ikke en god Use Case\cite{Larman2004} for at bruge WebSockets og WebSockets har ikke lige så godt support blandt ældre browsere. Den implementerede kommunikation bruger igen JSON, eftersom frontend Javascript i browseren ikke understøtter mange andre måder at serialisere og deserialisere data på.
 
-Der kan argumenteres for brug af en anden type kommunikationen til og fra QWest.Email eftersom at node.js har muligheden for rå TCP og UDP, og en serializerings metode some protobuf \cite{ProtoBuf} eller binary serializering \cite{CsharpBinarySerialization} ville dette unødvendig kompleksitet ind i projektet og introdusere tredjepartsbiblioteker i enten QWest.Email eller andre services som bruger QWest.Email, derfor ender QWest.Email med at følge standarden sat af QWest.Api og bruge standard http requests der sender JSON serializeret data.
+Der kan argumenteres for brug af en anden type kommunikation til og fra QWest.Email, eksempelvis har node.js muligheden for rå TCP og UDP, og en serializerings metode som ProtoBuf \cite{ProtoBuf} eller binær serialisering \cite{CsharpBinarySerialization}. Den unødvendige kompleksitet ville introducere tredjepartsbiblioteker i enten QWest.Email eller andre services som bruger QWest.Email, hvilket er grunden til at QWest.Email ender med at følge standarden ud fra kravene sat af QWest.Api, og bruger standard HTTP requests, der sender JSON serialiseret data.
 
 \section{Caching and HTTP optimization}\label{sec:caching}
-Caching the concept of saving the result of an expensive operation and instead of doing the operation again, the cache is just returned instead. Denne pattern har fordellen at reducerer mængden af komputationer der skal laves, dog kan den kun implementeres steder hvor at data'en ikke behøver at opdateres ofte eller hvor at du ved resultatet af operationen vil alted være den samme. Et eksempel på det første kriterie kunne være en informationsskærm som fortæller gæster hvordan været af, koden bag denne behøver ikke at konstant spørge DMI's API efter hvordan været er, at spørge vær time er nok godt nok. Et eksempel på det andet kriterie kunne være vores QWest.Web service som serverer statiske filer, der er ingen grund til at læse fra filsystemet vær eneste gang der bliver lavet en request hvis fil'en allerede er i hukommelsen.
+Caching the concept of saving the result of an expensive operation and instead of doing the operation again, the cache is just returned instead. Denne pattern har fordellen at reducerer mængden af komputationer der skal laves, dog kan den kun implementeres steder hvor at data'en ikke behøver at opdateres ofte eller hvor at du ved resultatet af operationen vil alted være den samme. Et eksempel på det første kriterie kunne være en informationsskærm som fortæller gæster hvordan været af, koden bag denne behøver ikke at konstant spørge DMI's API efter hvordan været er, at spørge vær time er nok godt nok. Et eksempel på det andet kriterie kunne være vores QWest.Web service som serverer statiske filer, der er ingen grund til at læse fra filsystemet vær eneste gang der bliver lavet en request hvis fil'en allerede er i hukommelsen.½
 
 HTTP protokollen har også indbygget caching \cite{HTTPcaching}, oftest form af \texttt{Cache-Control header}'en der lader webserver fortælle browsere hvor land tid de cache resultated for denne specifikke url. I QWest bruges HTTP caching i vores REST API i QWest.Api når billeder bliver leveret, eftersom at vi ikke lader billeder ændre sig betyder det at flere end en HTTP request til \texttt{/api/Image/Get/<image\_id>} er overflødig, og vi kan derfor tælle browseren til at gemme resultatet (i dette tilfælge billedet) til næste gang billedet skal bruges. Cache tiden er nuværende sat til 8765 timer (ca. at år), eftersom at "immutable" ikke er implementeret i alle browserer endnu.
 

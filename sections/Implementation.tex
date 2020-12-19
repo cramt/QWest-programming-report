@@ -3,9 +3,9 @@ I dette kapitel vil der blive beskrevet hvordan arkitekturen og features er impl
 
 \section{Database og persistence}\label{sec:database}
 \subsection{SQL og DAO}\label{sec:sqlOgDao}
-Eftersom der i dette projekt bruges ADO.NET direkte, uden nogen ORM eller lignende, betyder det at vi skal skrive vores egne SQL og DAO metoder. Måden dette er implementeret på er ved brug af DAO interfaces og statiske properties, som hver returnerer den tilsvarende interface. Disse interfaces, der beskriver metoderne som forventer en specifik DAO metode, og ligesom andre C\# interfaces er dette uafhængigt af den implementerede logik.
+Eftersom der i dette projekt bruges ADO.NET direkte, uden nogen ORM eller lignende, betyder det at vi skal skrive vores egne SQL og DAO metoder. Måden dette er implementeret på er ved brug af DAO interfaces og statiske properties, som hver returnerer den tilsvarende interface. Disse interfaces, der beskriver metoderne som forventer en specifik DAO metode, og ligesom andre C\# interfaces, er dette uafhængigt af den implementerede logik.
 Denne metode har 2 primære fordele. Den ene fordel er, at vi nemt kan oprette mocking-klasser af vores DAO-klasser. Mocking-klasserne vil accepteres som DAO-klasser i et unit testing miljø. Et eksempel på dette kan ses i \texttt{ImageControllerSpec} \ref{lst:imageControllerSpec}.
-Den anden fordel er lav kobling mellem logikken i vores DAO metoder og resten af koden. Dette kan være en kæmpe fordel, såfremt den nuværende implementation af Microsoft SQL på et tidspunkt skal udskiftes med en anden implementation. Skulle man implementere f.eks. MySQL\cite{mysql} fx ville det ikke være svært at implementere dette, eftersom al kode, der kalder DAO metoder, kalder dem gennem interfaces. Dette vil sige at alle ændringer i koden kun vil ske i QWest.DataAccess. Et eksempel på en DAO interface med tilsvarende egenskab kan findes i \texttt{QWest.DataAccess.DAO.IProgressMap} \ref{lst:progressMapDaoInterface}.
+Den anden fordel er lav kobling mellem logikken i vores DAO metoder og resten af koden. Dette kan være en kæmpe fordel, såfremt den nuværende implementation af Microsoft SQL på et tidspunkt skal udskiftes med en anden implementation. Skulle man implementere f.eks. MySQL\cite{mysql} ville det ikke være svært at implementere dette, eftersom al kode, der kalder DAO metoder, kalder dem gennem interfaces. Dette vil sige at alle ændringer i koden kun vil ske i \texttt{QWest.DataAccess}. Et eksempel på en DAO interface med tilsvarende egenskab kan findes i \texttt{QWest.DataAccess.DAO.IProgressMap} \ref{lst:progressMapDaoInterface}.
 Dette projekt gør brug af en Microsoft SQL database, så derfor er egenskaben som standard sat til MsSQL implementationen af interfacen.
 
 \begin{listing}[p]
@@ -84,10 +84,10 @@ namespace QWest.DataAccess {
 \subsubsection{DbRep pattern}\label{sec:dbRep}
 DbRep, en forkortelse for Database Representation, og er et designmønster vi har "opfundet". Den bruges i mange af projektets DAO metoder, fordi DbRep er et god designmønster til at stoppe kodeduplikation når det kommer til \texttt{select} DAO metoder.
 Alt i alt består dette designmønster af at lave en klasse, som reflekterer resultatet af en SQL Select-metode. DbRep klassens constructor tager imod en individuel row, som i C\# vil være i form af en \texttt{SqlDataReader}. Denne udpakker hver row til en property in denne klasse. Klassen skal så repræsentere Select resultatet og constructoren skal udpakke resultatet til properties i denne klasse.
-Indtil videre hjælper denne klasse med ikke at duplikere koden for udpakningen af SQL resultater, men der kan også kaldes en metode på klassen, ofte kaldet \texttt{ToModel} som returnerer den model klasse some vores DAO interface kræver at vi returnerer.
-Dette designmønster kan gøre DAO metode-skrivning nemmere, eftersom udpakningen og konstruktionen af den model klassen der skal returneres allerede eksistere og vær DAO metode kan fokuseser på SQL'en.
+Indtil videre hjælper denne klasse med ikke at duplikere koden for udpakningen af SQL resultater, men der kan også kaldes en \texttt{ToModel} metode på klassen, som returnerer den model klasse, hvilket DAO interfacen kræver at der returneres.
+Dette designmønster kan gøre DAO metode-skrivning nemmere, eftersom udpakningen og konstruktionen af den model klassen, der skal returneres, allerede eksisterer og hver DAO metode kan fokusere på SQL'en.
 En anden god fordel er at den splitter udpakning af data og mutering af data i to forskellige metoder. Dette er vigtigt eftersom vi gerne vil bruge så lidt tid som muligt med SQL forbindelsen åben og det er kun udpakningen af data der kræver dette.
-Et eksempel på en DbRep er PostDbRep \ref{lst:postDbRep}. Constructoren's job er at udpakke værdierne og intet andet, eftersom der er en SQL forbindelse åben. Data mutationen sker i ToModel(), hvor vi først skal finde ud af om en Post var lavet af en User eller en Group. Der er komma seperarede strenge og JSON der skal parses, hvilket ikke burde gøres mens der er en utrolig dyr SQL forbindelse åben.
+Et eksempel på en DbRep er PostDbRep som kan ses på kodeliste \ref{lst:postDbRep}. Constructoren's job er at udpakke værdierne og intet andet, eftersom der er en SQL forbindelse åben. Data mutationen sker i ToModel(), hvor vi først skal finde ud af om en Post var lavet af en User eller en Group. Der er kommaseperarede strenge og JSON der skal parses, hvilket ikke burde gøres mens der er en dyr SQL forbindelse åben.
 
 \begin{listing}[p]
     \begin{minted}
@@ -147,20 +147,20 @@ internal class PostDbRep : IDbRep<Post> {
 
 \subsection{Migration og backups}\label{sec:migration}
 QWest bruger et Database Migration Pattern\cite{datamigration} til at håndtere database ændringer.
-Database Migration betyder, at i stedet for at have et færdiggjort og definitivt SQL script til at sætte databasen op, så er der mange SQL scripts, som eksekveres i specifik rækkefølge. Dette har en massiv fordel i forhold til ét kompliceret, færdiggjort og definitivt SQL script, da der kan tilføjes ændringer til databasens tabeller uden at slette al data i databasen.
+Database Migration betyder, at i stedet for at have et færdiggjort og definitivt SQL script til at sætte databasen op, så er der mange SQL scripts, som eksekveres i specifik rækkefølge. Dette har en fordel i forhold til ét kompliceret, færdiggjort og definitivt SQL script, da der kan tilføjes ændringer til databasens tabeller uden at slette al data i databasen.
 
-Dette er utrolig vigtigt for den agile udviklings metode, hvilket kræver et development-feedback loop mellem udviklere og brugere. For at dette kan være en realitet, kræver det at applikationen har persistens mellem opdateringer for ikke at geive en forfærdelig brugeroplevelse.
+Dette er vigtigt for den agile udviklingsmetode, hvilket kræver et development-feedback loop mellem udviklere og brugere. For at dette kan være en realitet, kræver det at applikationen har persistens mellem opdateringer for ikke at geive en forfærdelig brugeroplevelse.
 
-For at undgå at eksekvere en migration som allerede er i databasen, er der oprettet en ekstra tabel kaldet \texttt{info} med rækken \texttt{schema\_version}. Denne holder styr på hvad nummeret var på den seneste migration der blev eksekveret. Dette tal kan så bruges til at versionstjekke, også kaldet Row-versioning\cite{rowversioning}.
+For at undgå at eksekvere en migration, som allerede er i databasen, er der oprettet en ekstra tabel kaldet \texttt{info} med rækken \texttt{schema\_version}. Denne holder styr på hvad nummeret var på den seneste migration der blev eksekveret. Dette tal kan så bruges til at versionstjekke, også kaldet Row-versioning\cite{rowversioning}.
 
-QWest's migrationer kan alle sammen findes i QWest.DataAcess/Migrations, og er navngivet efter rækkefølgen de skal eksekveres i. Det starter ved \texttt{1.sql} og ender på nuværende tidspunkt ved \texttt{20.sql}
+QWest's migrationer kan alle sammen findes i \texttt{QWest.DataAcess/Migrations}, og er navngivet efter rækkefølgen de skal eksekveres i. Det starter ved \texttt{1.sql} og ender på nuværende tidspunkt ved \texttt{20.sql}
 
-Efter migrationsprocessen i QWest, indsættes også backup af geopolitisk data,hvis intet geopolitisk data kan findes i databasen. Dette skyldes tildels testing årsager, eftersom vores integration-tests kan finde på at slette alle tabeller i databasen, hvilket ville slette denne næsten statiske data. 
+Efter migrationsprocessen i QWest, indsættes også backup af geopolitisk data, hvis intet geopolitisk data kan findes i databasen. Dette skyldes tildels testing årsager, eftersom vores integration-tests kan finde på at slette alle tabeller i databasen, hvilket ville slette denne næsten statiske data. 
 
 \section{Services}\label{sec:servicesImp}
 QWest er en applikation bestående af services, enten skrevet i node.js\cite{nodejs} eller C\#. Som nævnt i \ref{sec:servicesArc} er disse services henholdsvis \texttt{QWest.Api}, \texttt{QWest.Web}, \texttt{QWest.Email}.
 Ved start af QWest kaldes disse services fra \texttt{QWest.Services.Run}, hvor \texttt{WebSerivce} og \texttt{EmailSerivce} kaldes som NodeJS services, og \texttt{ApiService} og \texttt{AdminService} kaldes som C\# services. 
-Som nævnt i \ref{sec:servicesArc} er \texttt{QWest.Api} den service som forbinder front-end med resten af systemet og databasen. Hvis der eksempelvis er oprettet et opslag på front-end af brugeren, skal opslaget sendes til systemet som så kan lagre det i databasen, så det senere kan vises når brugeren efterspørger det. Implementationen af dette vil blive gennemgået i næsten afsnit \ref{sec:backend}.
+Som nævnt i \ref{sec:servicesArc} er \texttt{QWest.Api} den service, som forbinder front-end med resten af systemet og databasen. Hvis der eksempelvis er oprettet et opslag på front-end af brugeren, skal opslaget sendes til systemet som så kan lagre det i databasen, så det senere kan vises når brugeren efterspørger det. Implementationen af dette vil blive gennemgået i næsten afsnit \ref{sec:backend}.
 
 \section{Web design}\label{sec:webdesign}
 \subsection{Front-end and usability}\label{sec:frontend}
@@ -205,8 +205,8 @@ Alt er centreret på forsiden og både tekst og knapper er gjort store for at ø
 \caption{post-container i HTML front-end.\label{lst:post-container}}
 \end{listing}
 
-I \ref{lst:post-container} er de relevante inputs textarea post-contents som er beskrivelsen af opslaget, input post-images som indeholder billedet, og geopolitical-location-autocomplete som indeholder lokationen. 
-Disse inputs læses så af Javascript, som opretter et promise med beskrivelse, billede og lokation.
+I \ref{lst:post-container} er de relevante inputs \texttt{<textarea id="post-contents">} som er beskrivelsen af opslaget, \texttt{<input id="post-images">} som indeholder billedet, og \texttt{<div id="geopolitical-location-autocomplete">} som indeholder lokationen. 
+Disse inputs læses så af Javascript, som opretter et promise\cite{promise} med beskrivelse, billede og lokation.
 
 \begin{listing}[p]
     \begin{minted}
@@ -236,7 +236,7 @@ Disse inputs læses så af Javascript, som opretter et promise med beskrivelse, 
 \caption{Javascript logik til oprettelse af opslag.\label{lst:javascript-post}}
 \end{listing}
 
-Som det kan ses på linje 2 kaldes Post.Upload() metoden fra QWest.Api, hvor der sendes contents, location og images. Herefter checkes for om forespørgslen gik igennem korrekt - hvis ikke sendes fejl til log. 
+Som det kan ses på linje 2 på kodelisten \ref{lst:javascript-post} kaldes Post.Upload() metoden fra \texttt{QWest.Api}, hvor der sendes contents, location og images. Herefter checkes for om forespørgslen gik igennem korrekt - hvis ikke sendes fejl til log. 
 
 \begin{listing}[p]
     \begin{minted}
@@ -277,7 +277,7 @@ public async Task<HttpResponseMessage> Upload([FromBody] UploadArgument upload) 
 \caption{Post.Upload metoden, som forefindes i QWest.Api.PostController.\label{lst:post-controller}}
 \end{listing}
 
-På kodestykket \ref{lst:post-controller} ses Post.Upload metoden nævnt tidligere. Denne er ansvarlig for at modtage et UploadArgument, som indeholder opslagets informationer, henholdsvis billeder, beskrivelse, lokation og forfatter (bruger eller gruppe). På linje 13 og 18 kaldes PostRepo.Add. PostRepo er en intern klasse, som er DAO interfacet. Interfacet \texttt{IPost} under DAOPost indeholder altså de forskellige metoder såsom Add, Get, Update og andre. Som nævnt tidligere bruger selve implementationen af interfacet Microsoft SQL, og implementationen forefindes under \texttt{PostImpl} som findes under QWest.DataAccess. 
+På kodelisten \ref{lst:post-controller} ses Post.Upload metoden nævnt tidligere. Denne er ansvarlig for at modtage et UploadArgument, som indeholder opslagets informationer, henholdsvis billeder, beskrivelse, lokation og forfatter (bruger eller gruppe). På linje 13 og 18 kaldes PostRepo.Add. PostRepo er en intern klasse, som er DAO interfacet. Interfacet \texttt{IPost} under \texttt{DAOPost} indeholder altså de forskellige metoder såsom Add, Get, Update og andre. Som nævnt tidligere bruger selve implementationen af interfacet Microsoft SQL, og implementationen forefindes under \texttt{PostImpl} som findes under \texttt{QWest.DataAccess}. 
 
 \begin{listing}[p]
     \begin{minted}
@@ -341,9 +341,9 @@ WHERE posts.id = @post_id
 \end{minted}
 \caption{Implementationen af Add metoden i PostImpl.\label{lst:post-impl}}
 \end{listing}
-Add metoden kalder AddUserAuthor som sørger for at opdatere databasen med beskrivelse, bruger id, billede, lokation, og timestamp. Når alle værdierne er lagt i databasen bruges \texttt{ToModel()} metoden til at oprette et objekt af opslaget som Model.Post.
+\texttt{Add} metoden kalder \texttt{AddUserAuthor}, som sørger for at opdatere databasen med beskrivelse, bruger id, billede, lokation og timestamp. Når alle værdierne er lagt i databasen bruges \texttt{ToModel()} metoden til at oprette et objekt af opslaget som Model.Post.
 
-For at opsummere, kan det ses at denne implementation reflekterer arkitekturen af systemet ud fra figur \ref{fig:architecture_model}, da der sendes en request fra front-end, til QWest.Web, så til QWest.Api, som sender videre til QWest.DataAccess der både opretter opslaget i databasen, samt opretter et objekt ud fra Model klassen.
+For at opsummere, kan det ses at denne implementation reflekterer arkitekturen af systemet ud fra figur \ref{fig:architecture_model}, da der sendes en request fra front-end, til \texttt{QWest.Web}, så til \texttt{QWest.Api}, som sender videre til \texttt{QWest.DataAccess} der både opretter opslaget i databasen, samt opretter et objekt ud fra Model klassen.
 
 \section{Testing}\label{sec:testing}
 \begin{figure}[h]
@@ -351,7 +351,7 @@ For at opsummere, kan det ses at denne implementation reflekterer arkitekturen a
     \caption{Testresultater \label{fig:testresults}}
 \end{figure}
 
-\begin{listing}
+\begin{listing}[p]
     \begin{minted}
     [
         frame=lines,
@@ -378,7 +378,7 @@ class DaoPostSpec : DaoPostSpecSetupAndTearDown {
     \caption{AddsToDb test fra DaoPostSpec \label{fig:daoPostTest}}
 \end{listing}
 
-\begin{listing}[h]
+\begin{listing}[p]
     \begin{minted}
     [
         frame=lines,
@@ -436,7 +436,7 @@ public static class Utils {
     \caption{CleanUp-metode i DataAccessTests.Utils\label{fig:cleanup}}
 \end{listing}
 
-\begin{listing}[h]
+\begin{listing}[p]
     \begin{minted}
     [
         frame=lines,
@@ -460,30 +460,30 @@ public async Task GetsFromDbByEmail(string email) {
     \caption{Eksempel på brug af \texttt{TestCase}\label{fig:testCaseUsage}}
 \end{listing}
 
-I dette projekt er der gjort brug af softwaretests med NUnit 3\cite{nunit}. Disse tests har to formål: at dokumentere koden og hvad den kan, samt at sikre at koden virker. Vi har primært udviklet database-integrationstests, idet vores DAO-metoder indeholder meget kompleks logik i forhold til hvilke colonner og rækker, der bliver hentet fra databasen, og hvordan resultaterne bliver omdannet til model-objekter.
+I dette projekt er der gjort brug af softwaretests med NUnit 3\cite{nunit}. Disse tests har to formål: at dokumentere koden og dens funktionalitet, samt sikre at koden virker. Der er primært udviklet database-integrationstests, idet DAO-metoderne indeholder meget kompleks logik i forhold til hvilke kolonner og rækker, der bliver hentet fra databasen, og hvordan resultaterne bliver omdannet til model-objekter.
 
 Vores tests følger primært AAA-mønstret, hvori enhver givet test har tre trin \cite{ArrangeActAssert}:
-\begin{itemize}
+\begin{itemize}[h]
     \item \textbf{Arrange:} Sæt testens prækonditioner op.
     \item \textbf{Act:} Udfør handlingen der testes på.
     \item \textbf{Assert:} Påvis at det forventede resultat er opnået.
 \end{itemize}
 Kodeliste \ref{fig:daoPostTest} viser et eksempel på en test. Denne metode tester, hvorvidt en post bliver tilføjet til databasen. I arrange-fasen bliver en bruger oprettet i databasen, idet en post skal have en associeret bruger. Dernæst, i act-fasen, bliver en post tilføjet til databasen. Til sidst, i assert-fasen, tjekkes det, om posten er blevet tilføjet til databasen. Det bør her noteres at posten ikke bliver hentet igen \textit{fra} databasen. Dette er nemlig forbeholdt andre tests.
 
-Det fulde testsuite kan ses i figur \ref{fig:testresults}. Individuelle tests bliver ikke vist, fordi der er mere end 50 af dem. I stedet bliver hver \textit{test fixture} vist, som er NUnits terminologi for en testklasse. Nogle af disse testklasser har underklasser, som vises med et '+'-tegn på billedet. Metoderne er navngivet efter en konvention om, at de skal være sætninger, der forklarer hvad den forventede opførsel er. Før hver test, samt efter sidste test i hver testklasse i DAO-laget, kaldes en statisk metode, der sørger for, at alle relevante tabeller i databasen har fået deres rækker slettet. På den måde sørger vi for, at databasen er i samme tilstand i hver test, og at tests ikke har indflydelse på hindanden. Kodeliste \ref{fig:setupAndTearDown} viser et eksempel på, hvordan metoden bliver brugt, og kodeliste \ref{fig:cleanup} viser selve metoden. Metoden tager et boolean argument som bestemmer hvorvidt geopolitisk data skal slettes og genindsættes fra backup. Dette er fordi dette er en meget tidskrævende process, og derfor bør det kun gøres i tests, der har med denne slags data at gøre.
+Det fulde testsuite kan ses i figur \ref{fig:testresults}. Individuelle tests bliver ikke vist, fordi der er 52 af dem. I stedet bliver hver \textit{test fixture} vist, som er NUnits terminologi for en testklasse. Nogle af disse testklasser har underklasser, som vises med et '+'-tegn på billedet. Metoderne er navngivet efter en konvention om, at de skal være sætninger, der forklarer, hvad den forventede opførsel er. Før hver test, samt efter sidste test i hver testklasse i DAO-laget, kaldes en statisk metode, der sørger for, at alle relevante tabeller i databasen har fået deres rækker slettet. På den måde sørger vi for, at databasen er i samme tilstand i hver test, og at tests ikke har indflydelse på hindanden. Kodeliste \ref{fig:setupAndTearDown} viser et eksempel på, hvordan metoden bliver brugt, og kodeliste \ref{fig:cleanup} viser selve metoden. Metoden tager et boolsk argument, som bestemmer hvorvidt geopolitisk data skal slettes og genindsættes fra backup. Dette er fordi det er en meget tidskrævende process, og derfor bør det kun gøres i tests, der har med denne slags data at gøre.
 
-I enkelte tilfælde er der også gjort brug af NUnits \texttt{TestCase}-annotation. Et eksempel på dette kan ses i kodeliste \ref{fig:testCaseUsage}. Med denne annotation kan man give sin testmetode en parameterliste. NUnits testkører kan dermed passere argumenter til testmetoden ved hjælp af \texttt{TestCase}-annotationen, så man dermed kan køre sin test med forskellige argumenter uden at skulle skrive flere forskellige tests, der gør næsten det samme.
+I enkelte tilfælde er der også gjort brug af NUnits \texttt{TestCase}-annotation. Et eksempel på dette kan ses i kodeliste \ref{fig:testCaseUsage}. Med denne annotation kan man give sin testmetode en parameterliste. NUnits testkører kan dermed parsere argumenter til testmetoden ved hjælp af \texttt{TestCase}-annotationen, så man dermed kan køre sin test med forskellige argumenter uden at skulle skrive flere forskellige tests, der gør næsten det samme.
 
 \section{Webscraping af geopolitisk data}\label{sec:datascraping}
-Det geopolitiske data QWest projected omhandler sig om er bedst beskrevet af ISO 3166 standarden \cite{ISO3166}, primært ISO 3166-1 og ISO 3166-2, der er dog et stort problem ved dette data, ISO 3166-1 er perfect for vores use-case men ISO 3166-2 har problemmet med at alle navne på lande subdivisions are lokalle navne i det lokalle sprog, dette virker utrolig dårligt i QWest's situation eftersom at de rejsende ikke nødvendighvis ved hvad de lokalle navn for deres lokation er, og kun kender det engelske navn, det ville være en forfærdelig bruger oplevelse for fx en amerikans rejsende som to på ud og rejse i Nordjylland, men når han bruger vores applikation kan han ikke finde "Northern Denmark Region" hvilket er hvad denne region hedder for ham.
+Det geopolitiske data QWest projektet omhandler er bedst beskrevet af ISO 3166 standarden\cite{ISO3166}, primært ISO 3166-1 og ISO 3166-2. Der er dog et problem ved dette data, for ISO 3166-1 er perfekt for projektets use-case, men ISO 3166-2 har problemmet med, at alle navne på landenes subdivisions er lokale navne i det lokale sprog. Dette virker dårligt i QWest's situation eftersom de rejsende ikke nødvendigvis ved, hvad de lokale navn for deres lokation er, og det er kun de engelske navne der er tilgængelige når man vælger lokation. Det ville være en forfærdelig brugeroplevelse for eksempelvis en amerikansk rejsende på rejse i Nordjylland, men når den rejsende bruger QWest applikationen, kan den rejsende ikke finde "Northern Denmark Region", hvilket er hvad denne region hedder på Engelsk.
 
-Løsningen på dette problem er selvfølgelig at have en måde at have så mange mulige navne på alle steder så muligt, vigtigts værende det engelske/internationalle navn. Det eneste sted dette data kun blive fundet i en nogenlunde konsistent, nogenlunde computerlæselig måde er på wikipedia.
+Løsningen på dette problem er selvfølgelig, at have så mange mulige navne på alle lokationer som muligt, de vigtigste værende det engelske/internationale navn. Det eneste sted dette data kan findes i en nogenlunde konsistent måde, som nemt kan scrapes, er Wikipedia.
 
-Wikimedia (platformen Wikipedia er bygget på) udbyder deres egen REST API \cite{Wikimedia-REST-API-Documentation}, ud over dette har Wikipedia en entry for vært lands ISO 3166-2, det vil sige all deres subdivisions, og de er alle navngivet \texttt{ISO\_3166-2:}<landets alpha2>, alle af disse sider er også opbygget på den samme måde, en tabel der med id'et til mest venstre og alt til højre fra dette er forskellige måder at skrive subdivision'ens navn på. Det eneste problem med dette data er at Wikimedia's REST API kan kun representere det i HTML form sammen med resten af den standard wikipedia side.
+Wikimedia (platformen Wikipedia er bygget på) udbyder deres egen REST API \cite{Wikimedia-REST-API-Documentation}. Udover dette har Wikipedia en entry for hvert lands ISO 3166-2, hvilket vil sige alle subdivisions er navngivet \texttt{ISO\_3166-2:}<landets alpha2>. Alle disse sider er også opbygget på den samme måde, med en tabel der indeholder id'et til venstre og alle forskellige måder at skrive subdivision'ens navn på til højre. Det eneste problem med dette data er, at Wikimedia's REST API kun kan repræsentere dataen i HTML format sammen med resten af den Wikipedia siden.
 
-Alt i alt skal et program skrives som kan læse resultatet fra Wikimedia's REST API og derefter parse html'en og indsamle det data der er relevant. 
-Denne slags program er ofte kaldet en \texttt{web scraper}, og QWest's Wikipedia web scraper kan findes i QWest koden i folderen \texttt{iso3166converter}.
+Alt i alt skal der udvikles et program, som kan læse resultatet fra Wikimedia's REST API og derefter parse HTML'en og indsamle det data der er relevant. 
+Denne slags program er ofte kaldet en \texttt{web scraper}, og QWest's Wikipedia web scraper kan findes i QWest koden i mappen \texttt{iso3166converter}.
 
-\texttt{iso3166converter} er skrevet i Ruby \cite{RubyLang}, et dynamisk programmerings sprog med fokusområde på at udviklingsværktøjer og hurtige scripts, meget ligesom python. \texttt{iso3166converter} bruger 2 gems (Ruby's navn for tredjepartsbiblioteker) \texttt{nokogiri} \cite{nokogiri}, som bruges til at parse html, og \texttt{httparty} \cite{httparty}, som bruges til at sende http requests.
+\texttt{iso3166converter} er skrevet i Ruby \cite{RubyLang}, et dynamisk programmeringssprog med fokusområde på udviklingsværktøjer og hurtige scripts, hvilket minder meget Python\cite{python}. \texttt{iso3166converter} bruger 2 gems (Ruby's navn for tredjepartsbiblioteker) \texttt{nokogiri} \cite{nokogiri}, som bruges til at parse HTML, og \texttt{httparty} \cite{httparty}, som bruges til at sende http requests.
 
-Ruby programmet får systematisk igennem vært land i ISO 3166-1 og finder deres subdivisions baseret på Wikipedia data og inserter det. Programmet gør få andre thing som fx at omnavngive mange af json navnene så de ikke indeholder et \texttt{"-"}. Når Ruby programmet er færdigt laver den en JSON fil som er den original backup fil insættet i databasen, som er beskrevet i \ref{sec:migration}
+Ruby programmet går systematisk igennem hvert land i ISO 3166-1, finder deres subdivisions baseret på Wikipedia data og inserter det. Programmet gør andre ting som f.eks. at omnavngive mange af json navnene så de ikke indeholder et \texttt{"-"}. Når Ruby programmet er færdigt oprettes en JSON fil, som er den originale backup fil indsat i databasen, hvilket er beskrevet i \ref{sec:migration}
