@@ -206,7 +206,7 @@ Alt er centreret på forsiden og både tekst og knapper er gjort store for at ø
 \end{listing}
 
 I \ref{lst:post-container} er de relevante inputs \texttt{<textarea id="post-contents">} som er beskrivelsen af opslaget, \texttt{<input id="post-images">} som indeholder billedet, og \texttt{<div id="geopolitical-location-autocomplete">} som indeholder lokationen. 
-Disse inputs læses så af Javascript, som opretter et promise\cite{promise} med beskrivelse, billede og lokation.
+Disse inputs læses så af Javascript, som opretter et promise \cite{Promise} med beskrivelse, billede og lokation.
 
 \begin{listing}[p]
     \begin{minted}
@@ -277,7 +277,7 @@ public async Task<HttpResponseMessage> Upload([FromBody] UploadArgument upload) 
 \caption{Post.Upload metoden, som forefindes i QWest.Api.PostController.\label{lst:post-controller}}
 \end{listing}
 
-På kodelisten \ref{lst:post-controller} ses Post.Upload metoden nævnt tidligere. Denne er ansvarlig for at modtage et UploadArgument, som indeholder opslagets informationer, henholdsvis billeder, beskrivelse, lokation og forfatter (bruger eller gruppe). På linje 13 og 18 kaldes PostRepo.Add. PostRepo er en intern klasse, som er DAO interfacet. Interfacet \texttt{IPost} under \texttt{DAOPost} indeholder altså de forskellige metoder såsom Add, Get, Update og andre. Som nævnt tidligere bruger selve implementationen af interfacet Microsoft SQL, og implementationen forefindes under \texttt{PostImpl} som findes under \texttt{QWest.DataAccess}. 
+På kodelisten \ref{lst:post-controller} ses Post.Upload metoden nævnt tidligere. Denne er ansvarlig for at modtage et UploadArgument, som indeholder opslagets informationer, henholdsvis billeder, beskrivelse, lokation og forfatter (bruger eller gruppe). På linje 13 og 18 kaldes PostRepo.Add. PostRepo er en intern klasse, som er DAO interfacet. Interfacet \texttt{IPost} under \texttt{DAOPost} indeholder altså de forskellige metoder såsom Add, Get, Update, osv. Som nævnt tidligere bruger selve implementationen af interfacet Microsoft SQL, og implementationen forefindes under \texttt{PostImpl} som findes under \texttt{QWest.DataAccess}. 
 
 \begin{listing}[p]
     \begin{minted}
@@ -346,12 +346,12 @@ WHERE posts.id = @post_id
 For at opsummere, kan det ses at denne implementation reflekterer arkitekturen af systemet ud fra figur \ref{fig:architecture_model}, da der sendes en request fra front-end, til \texttt{QWest.Web}, så til \texttt{QWest.Api}, som sender videre til \texttt{QWest.DataAccess} der både opretter opslaget i databasen, samt opretter et objekt ud fra Model klassen.
 
 \section{Testing}\label{sec:testing}
-\begin{figure}[p]
+\begin{figure}[h]
     \includegraphics[width=1\textwidth]{testresults.PNG}
     \caption{Testresultater \label{fig:testresults}}
 \end{figure}
 
-\begin{listing}[p]
+\begin{listing}
     \begin{minted}
     [
         frame=lines,
@@ -378,7 +378,7 @@ class DaoPostSpec : DaoPostSpecSetupAndTearDown {
     \caption{AddsToDb test fra DaoPostSpec \label{fig:daoPostTest}}
 \end{listing}
 
-\begin{listing}[p]
+\begin{listing}[h]
     \begin{minted}
     [
         frame=lines,
@@ -436,7 +436,7 @@ public static class Utils {
     \caption{CleanUp-metode i DataAccessTests.Utils\label{fig:cleanup}}
 \end{listing}
 
-\begin{listing}[p]
+\begin{listing}[h]
     \begin{minted}
     [
         frame=lines,
