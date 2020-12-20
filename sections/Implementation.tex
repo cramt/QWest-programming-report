@@ -346,7 +346,7 @@ WHERE posts.id = @post_id
 For at opsummere, kan det ses at denne implementation reflekterer arkitekturen af systemet ud fra figur \ref{fig:architecture_model}, da der sendes en request fra front-end, til \texttt{QWest.Web}, så til \texttt{QWest.Api}, som sender videre til \texttt{QWest.DataAccess} der både opretter opslaget i databasen, samt opretter et objekt ud fra Model klassen.
 
 \section{Testing}\label{sec:testing}
-\begin{figure}[h]
+\begin{figure}[p]
     \includegraphics[width=1\textwidth]{testresults.PNG}
     \caption{Testresultater \label{fig:testresults}}
 \end{figure}
@@ -463,7 +463,7 @@ public async Task GetsFromDbByEmail(string email) {
 I dette projekt er der gjort brug af softwaretests med NUnit 3\cite{nunit}. Disse tests har to formål: at dokumentere koden og dens funktionalitet, samt sikre at koden virker. Der er primært udviklet database-integrationstests, idet DAO-metoderne indeholder meget kompleks logik i forhold til hvilke kolonner og rækker, der bliver hentet fra databasen, og hvordan resultaterne bliver omdannet til model-objekter.
 
 Vores tests følger primært AAA-mønstret, hvori enhver givet test har tre trin \cite{ArrangeActAssert}:
-\begin{itemize}[h]
+\begin{itemize}
     \item \textbf{Arrange:} Sæt testens prækonditioner op.
     \item \textbf{Act:} Udfør handlingen der testes på.
     \item \textbf{Assert:} Påvis at det forventede resultat er opnået.

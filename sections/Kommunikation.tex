@@ -2,7 +2,7 @@
 Som nævnt i sektion \ref{sec:distSys} foregår kommunikationen i flere lag, herunder frontend (præsentationslag), logik lag som tilgås gennem QWest.API, og et datalag som er databasen, der tilgås af QWest.DataAccess. 
 Når programmet startes de forskellige services nævnt i sektion \ref{sec:servicesArc}. QWest.Web oprettes som en proxy der sender HTTP Requests \cite{DistributedSystems}, og hele opstartsprocessen kan ses på figur \ref{fig:startup_log}.
 
-\begin{figure}[h]
+\begin{figure}[p]
     \includegraphics[width=\linewidth]{services_run_log.png}
     \caption{QWest.Services.Run opstarts log.}
     \label{fig:startup_log}
@@ -65,7 +65,7 @@ Atomicity betyder at transaction'en ikke kan splittes op i mindre dele. En trans
 Dette betyder også, at der aldrig er tidspunkt, hvor den første operation er skrevet til databasen, men anden operation ikke har. Der er kun én aktion.
 
 \subsection{ACID: Consistency}\label{sec:acidConsistent}
-Consistency betyder at reglerne sat op i SQL databasen (såsom \texit{unique constraints}, \texit{not null constraints} og \texit{foreign keys} \cite{SqlConstraints}) skal overholdes. Det vil sige at værdien der skal ændres skal være samme værdi fra start til slut af transaktionen.
+Consistency betyder at reglerne sat op i SQL databasen (såsom \textit{unique constraints}, \textit{not null constraints} og \textit{foreign keys} \cite{SqlConstraints}) skal overholdes. Det vil sige at værdien der skal ændres skal være samme værdi fra start til slut af transaktionen.
 
 \subsection{ACID: Isolation}\label{sec:acidIsolated}
 Isolation betyder at SQL Transactions ikke skal være afhængige af andre SQL Transactions.
