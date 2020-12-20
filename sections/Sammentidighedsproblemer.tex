@@ -9,7 +9,7 @@ Generelt om samtidighedsproblemer er der to tilgange: Pessimistisk eller optimis
 
 Den optimistiske tilgang er primært rettet mod programmer, som kører i lang tid. Ved den optimistiske tilgang bliver data som ændres ikke låst for redigering, men i stedet er det mere vigtigt at vide, hvilken version af data der er tilgået. Flere brugere kan så tilgå det samme data og ændre det samtidig, hvor hver ændring så får tildelt sit eget versionsnummer. Denne versionsstyring kan bruges ved at have et tal i databasen, og metoden er også kaldet Row Versioning\cite{rowversioning}.
 
-Den pessimistiske tilgang betyder at der sættes lås på data så snart det skal ændres, og låsen frigøres først når dataen er ændret færdig. Dette kan være vigtigt ved de transaktioner hvor rækkefølgen af operationerne er meget vigtig, og der foretages kun én ændring ad gangen - eksempelvis ved bank-overførsler. hvis der hæves penge af to instanser fra samme konto samtidigt, er det vigtigt at den første hævning får en lås på kontoen, således at der ikke opstår en dobbelthævning på penge som ikke eksisterer. 
+Den pessimistiske tilgang betyder at der sættes lås på data så snart det skal ændres, og låsen frigøres først når dataen er ændret færdig. Dette kan være vigtigt ved de transaktioner hvor rækkefølgen af operationerne er vigtig, og der foretages kun én ændring ad gangen - eksempelvis ved bank-overførsler. hvis der hæves penge af to instanser fra samme konto samtidigt, er det vigtigt at den første hævning får en lås på kontoen, således at der ikke opstår en dobbelthævning på penge som ikke eksisterer. 
 
 
 \section{Valgt løsning}\label{sec:chosen_solution}
