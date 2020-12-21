@@ -290,9 +290,6 @@ På kodelisten \ref{lst:post-controller} ses Post.Upload metoden nævnt tidliger
         linenos,
         breaklines
     ]{csharp}
-public Task<Post> Add(string contents, User user, List<byte[]> images, int? locationId) {
-    return AddUserAuthor(contents, (int)user.Id, images, locationId);
-}
 public async Task<Post> AddUserAuthor(string contents, int userId, List<byte[]> images, int? locationId) {
     string query = $@"
 DECLARE @post_id INT;
