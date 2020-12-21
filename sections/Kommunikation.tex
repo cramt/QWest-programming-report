@@ -11,9 +11,9 @@ Når programmet startes de forskellige services nævnt i sektion \ref{sec:servic
 Bruger-klienten tilgås gennem en browser, som sender HTTP Requests til \texttt{QWest.API}, der så kalder controllers til DAO til databasen. Som nævnt i sektion \ref{sec:REST} bruges der Json.NET til serialisering og JSON data til deserialisering. Da projektet er gennemført med REST, er der ingen konstant forbindelse til databasen, men i stedet laves der kun forbindelser når databasen skal opdateres ud fra en brugeroperation. 
 
 \section{Sikkerhed}\label{sec:security}
-HTTPS vil være den primære måde at sikre os, at bruger input er sikkert krypteret mens de bliver transporeret til QWest.Api, .NET framework skulle have support for HTTPS. \cite{DotNetFrameworkSSL} Der er ikke lagt arbejde i at sætte dette op, eftersom vi ikke ejer it SSL certificate. 
-Måden autentificering er implementeret i systemet, er gennem login siden. Man skal være logget ind som bruger med brugernavn og password, for at kunne tilgå andre dele af systemet. Hver file-path som kan tilgås på hjemmesiden, checker om det er den korrekte bruger der er logget ind. Hvis ikke, så sendes brugeren til forsiden, hvor de kan logge ind eller oprette bruger.
-For at sikre vores brugere mod leaking af deres passwords, såfremt der sker et data breach, hasher og salter vi alle brugeres passwords. Der bruges \texttt{Rfc2898DeriveBytes} \cite{Rfc2898DeriveBytes} til dette. Denne klasse bruger SHA1, som ikke er en optimal sikker hashing metode, hvilket burde ændres i næste iteration af projektet \cite{HowsecureisSHA1} til BCrypt \cite{BCrypt} eller lignende.
+HTTPS vil være den primære måde at sikre os, at bruger input er krypteret mens de bliver transporteret til QWest.Api, .NET framework skulle have support for HTTPS. \cite{DotNetFrameworkSSL} Der er ikke lagt arbejde i at sætte dette op, eftersom vi ikke ejer it SSL certificate. 
+Måden autentificering er implementeret i systemet, er gennem login siden. Man skal være logget ind som bruger med brugernavn og password, for at kunne tilgå andre dele af systemet. Hver file-path som kan tilgås på hjemmesiden, checker om brugeren er logget ind. Hvis ikke, sendes brugeren til forsiden, hvor de kan logge ind eller oprette bruger.
+For at sikre vores brugere mod leaking af deres passwords, ved f.eks. data breach, hasher og salter vi alle brugeres passwords. Der bruges \texttt{Rfc2898DeriveBytes} \cite{Rfc2898DeriveBytes} til dette. Denne klasse bruger SHA1, som ikke er en optimal sikker hashing metode, hvilket burde ændres i næste iteration af projektet \cite{HowsecureisSHA1} til BCrypt \cite{BCrypt} eller lignende.
 
 Når data skal lagres i databasen, bruges der SQL parametre for at undgå SQL injections. Som det kan ses i kodestykket \ref{lst:SQLinjection}, så bruges der en parametriseret SQL query string, hvor argumenterne metoden tager imod, placeres i de tilsvarende SQL parametre.
 
@@ -65,7 +65,7 @@ Atomicity betyder at transaction'en ikke kan splittes op i mindre dele. En trans
 Dette betyder også, at der aldrig er tidspunkt, hvor den første operation er skrevet til databasen, men anden operation ikke har. Der er kun én aktion.
 
 \subsection{ACID: Consistency}\label{sec:acidConsistent}
-Consistency betyder at reglerne sat op i SQL databasen (såsom \textit{unique constraints}, \textit{not null constraints} og \textit{foreign keys} \cite{SqlConstraints}) skal overholdes. Det vil sige at værdien der skal ændres skal være samme værdi fra start til slut af transaktionen.
+Consistency betyder at reglerne sat op i SQL databasen (såsom \textit{unique constraints}, \textit{not null constraints} og \textit{foreign keys} \cite{SqlConstraints}) skal overholdes. Det vil sige at værdien, der skal ændres skal være samme værdi fra start til slut af transaktionen.
 
 \subsection{ACID: Isolation}\label{sec:acidIsolated}
 Isolation betyder at SQL Transactions ikke skal være afhængige af andre SQL Transactions.

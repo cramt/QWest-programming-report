@@ -3,7 +3,7 @@ I dette kapitel vil der blive beskrevet hvordan arkitekturen og features er impl
 
 \section{Database og persistence}\label{sec:database}
 \subsection{SQL og DAO}\label{sec:sqlOgDao}
-Eftersom der i dette projekt bruges ADO.NET direkte, uden nogen ORM eller lignende, betyder det at vi skal skrive vores egne SQL og DAO metoder. Måden dette er implementeret på er ved brug af DAO interfaces og statiske properties, som hver returnerer den tilsvarende interface. Disse interfaces, der beskriver metoderne som forventer en specifik DAO metode, og ligesom andre C\# interfaces, er dette uafhængigt af den implementerede logik.
+Eftersom der i dette projekt bruges ADO.NET direkte, uden ORM betyder det at vi skal skrive vores egne SQL og DAO metoder. Måden dette er implementeret på er ved brug af DAO interfaces og statiske properties, som hver returnerer den tilsvarende interface. Disse interfaces, der beskriver metoderne som forventer en specifik DAO metode, og ligesom andre C\# interfaces, er dette uafhængigt af den implementerede logik.
 Denne metode har 2 primære fordele. Den ene fordel er, at vi nemt kan oprette mocking-klasser af vores DAO-klasser. Mocking-klasserne vil accepteres som DAO-klasser i et unit testing miljø. Et eksempel på dette kan ses i \texttt{ImageControllerSpec} \ref{lst:imageControllerSpec}.
 Den anden fordel er lav kobling mellem logikken i vores DAO metoder og resten af koden. Dette kan være en kæmpe fordel, såfremt den nuværende implementation af Microsoft SQL på et tidspunkt skal udskiftes med en anden implementation. Skulle man implementere f.eks. MySQL\cite{mysql} ville det ikke være svært at implementere dette, eftersom al kode, der kalder DAO metoder, kalder dem gennem interfaces. Dette vil sige at alle ændringer i koden kun vil ske i \texttt{QWest.DataAccess}. Et eksempel på en DAO interface med tilsvarende egenskab kan findes i \texttt{QWest.DataAccess.DAO.IProgressMap} \ref{lst:progressMapDaoInterface}.
 Dette projekt gør brug af en Microsoft SQL database, så derfor er egenskaben som standard sat til MsSQL implementationen af interfacen.
@@ -116,7 +116,7 @@ internal class PostDbRep : IDbRep<Post> {
 QWest bruger et Database Migration Pattern\cite{datamigration} til at håndtere database ændringer.
 Database Migration betyder, at i stedet for at have et færdiggjort og definitivt SQL script til at sætte databasen op, så er der mange SQL scripts, som eksekveres i specifik rækkefølge. Dette har en fordel i forhold til ét kompliceret, færdiggjort og definitivt SQL script, da der kan tilføjes ændringer til databasens tabeller uden at slette al data i databasen.
 
-Dette er vigtigt for den agile udviklingsmetode, hvilket kræver et development-feedback loop mellem udviklere og brugere. For at dette kan være en realitet, kræver det at applikationen har persistens mellem opdateringer for ikke at geive en forfærdelig brugeroplevelse.
+Dette er vigtigt for den agile udviklingsmetode, som kræver et development feedback loop mellem udviklere og brugere. For at dette kan være lade sig gøre, kræver det at applikationen har persistens mellem opdateringer for ikke at give en dårlig brugeroplevelse.
 
 For at undgå at eksekvere en migration, som allerede er i databasen, er der oprettet en ekstra tabel kaldet \texttt{info} med rækken \texttt{schema\_version}. Denne holder styr på hvad nummeret var på den seneste migration der blev eksekveret. Dette tal kan så bruges til at versionstjekke, også kaldet Row-versioning\cite{rowversioning}.
 
@@ -126,8 +126,8 @@ Efter migrationsprocessen i QWest, indsættes også backup af geopolitisk data, 
 
 \section{Services}\label{sec:servicesImp}
 QWest er en applikation bestående af services, enten skrevet i node.js\cite{nodejs} eller C\#. Som nævnt i \ref{sec:servicesArc} er disse services henholdsvis \texttt{QWest.Api}, \texttt{QWest.Web}, \texttt{QWest.Email}.
-Ved start af QWest kaldes disse services fra \texttt{QWest.Services.Run}, hvor \texttt{WebSerivce} og \texttt{EmailSerivce} kaldes som NodeJS services, og \texttt{ApiService} og \texttt{AdminService} kaldes som C\# services. 
-Som nævnt i \ref{sec:servicesArc} er \texttt{QWest.Api} den service, som forbinder front-end med resten af systemet og databasen. Hvis der eksempelvis er oprettet et opslag på front-end af brugeren, skal opslaget sendes til systemet som så kan lagre det i databasen, så det senere kan vises når brugeren efterspørger det. Implementationen af dette vil blive gennemgået i næsten afsnit \ref{sec:backend}.
+Ved start af QWest kaldes disse services fra \texttt{QWest.Services.Run}, hvor \texttt{WebService} og \texttt{EmailService} kaldes som NodeJS services, og \texttt{ApiService} og \texttt{AdminService} kaldes som C\# services. 
+Som nævnt i \ref{sec:servicesArc} er \texttt{QWest.Api} den service, som forbinder front-end med resten af systemet og databasen. Hvis der eksempelvis er oprettet et opslag på front-end af brugeren, skal opslaget sendes til systemet, som så kan lagre det i databasen. Implementationen af dette vil blive gennemgået i næsten afsnit \ref{sec:backend}.
 
 \section{Web design}\label{sec:webdesign}
 \subsection{Front-end and usability}\label{sec:frontend}
@@ -143,37 +143,38 @@ Alt er centreret på forsiden og både tekst og knapper er gjort store for at ø
 
 \subsection{Back-end and logic}\label{sec:backend}
 
-\begin{listing}[p]
-    \begin{minted}
-    [
-        frame=lines,
-        framesep=2mm,
-        baselinestretch=1.2,
-        bgcolor=LightGray,
-        fontsize=\footnotesize,
-        linenos,
-        breaklines
-    ]{html}
-<div id="post-container">
-    <label>Make a post:</label>
-    <br/>
-    <textarea id="post-contents" text="" placeholder="Write your post here..." class="btn btn-lg btn-secondary"></textarea>            
-    <br/>
-    <div class="w3-container" id="upload-file">
-        <label for="file" id="image-label">Upload image</label>
-        <input type="file" id="post-images" />
-    </div>
-    <label>Choose a location:</label>
-    <div id="geopolitical-location-autocomplete"></div>
-    <br>
-    <button class="btn btn-primary" id="post-button">Post</button>
-</div>
-\end{minted}
-\caption{post-container i HTML front-end.\label{lst:post-container}}
-\end{listing}
+%\begin{listing}[p]
+%    \begin{minted}
+%    [
+%        frame=lines,
+%        framesep=2mm,
+%        baselinestretch=1.2,
+%        bgcolor=LightGray,
+%        fontsize=\footnotesize,
+%        linenos,
+%        breaklines
+%    ]{html}
+%<div id="post-container">
+%    <label>Make a post:</label>
+%    <br/>
+%    <textarea id="post-contents" text="" placeholder="Write your post here..." class="btn btn-lg btn-secondary"></textarea>            
+%    <br/>
+%    <div class="w3-container" id="upload-file">
+%        <label for="file" id="image-label">Upload image</label>
+%        <input type="file" id="post-images" />
+%    </div>
+%    <label>Choose a location:</label>
+%    <div id="geopolitical-location-autocomplete"></div>
+%    <br>
+%    <button class="btn btn-primary" id="post-button">Post</button>
+%</div>
+%\end{minted}
+%\caption{post-container i HTML front-end.\label{lst:post-container}}
+%\end{listing}
 
-I \ref{lst:post-container} er de relevante inputs \texttt{<textarea id="post-contents">} som er beskrivelsen af opslaget, \texttt{<input id="post-images">} som indeholder billedet, og \texttt{<div id="geopolitical-location-autocomplete">} som indeholder lokationen. 
-Disse inputs læses så af Javascript, som opretter et promise \cite{Promise} med beskrivelse, billede og lokation.
+På figur \ref{fig:frontend} ses de relevante input-felter: beskrivelse, billede og lokation. 
+%\texttt{<textarea id="post-contents">} som er beskrivelsen af opslaget, \texttt{<input id="post-images">} som indeholder billedet, og \texttt{<div id="geopolitical-location-autocomplete">} som indeholder lokationen. 
+Disse inputs læses så af Javascript, som opretter et promise \cite{Promise} med felternes værdier.
 
 \begin{listing}[p]
     \begin{minted}
