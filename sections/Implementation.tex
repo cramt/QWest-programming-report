@@ -35,18 +35,6 @@ namespace QWest.Api.Tests {
             byte[] bytes = await (await imageController.Get(null)).Content.ReadAsByteArrayAsync();
             Assert.IsNotEmpty(bytes);
         }
-        [Test]
-        public async Task ReturnsCorrectImage() {
-            byte[] expected = new byte[] { 1, 2, 3 };
-            ImageController imageController = new ImageController();
-            imageController.ImageRepo = new ImageRepoMock {
-                ImageDictionary = new Dictionary<int, byte[]> {
-                    {5, expected }
-                }
-            };
-            byte[] bytes = await (await imageController.Get(5)).Content.ReadAsByteArrayAsync();
-            Assert.AreEqual(expected, bytes);
-        }
     }
 }
 \end{minted}
@@ -102,28 +90,7 @@ Et eksempel på en DbRep er PostDbRep som kan ses på kodeliste \ref{lst:postDbR
     ]{csharp}
 [Serializable]
 internal class PostDbRep : IDbRep<Post> {
-    //deleted properties for readability in this snippet
-    public PostDbRep(SqlDataReader reader) {
-        int i = 0;
-        Id = reader.GetSqlInt32(i++).Value;
-        Content = reader.GetSqlString(i++).Value;
-        UserId = reader.GetSqlInt32(i++).NullableValue();
-        GroupId = reader.GetSqlInt32(i++).NullableValue();
-        PostTime = reader.GetSqlInt32(i++).Value;
-        Location = reader.GetSqlString(i++).NullableValue();
-        Username = reader.GetSqlString(i++).NullableValue();
-        PasswordHash = reader.GetSqlBinary(i++).NullableValue();
-        Email = reader.GetSqlString(i++).NullableValue();
-        UserDescription = reader.GetSqlString(i++).NullableValue();
-        SessionCookie = reader.GetSqlBinary(i++).NullableValue();
-        ProfilePicture = reader.GetSqlInt32(i++).NullableValue();
-        Name = reader.GetSqlString(i++).NullableValue();
-        CreationTime = reader.GetSqlInt32(i++).NullableValue();
-        GroupDescription = reader.GetSqlString(i++).NullableValue();
-        Images = reader.GetSqlString(i++).NullableValue();
-        Members = reader.GetSqlString(i++).NullableValue();
-    }
-
+    //...
     public Post ToModel() {
         User userAuthor = null;
         Group groupAuthor = null;
@@ -397,41 +364,41 @@ public class DaoPostSpecSetupAndTearDown {
     \caption{Setup og TearDown-metode\label{fig:setupAndTearDown}}
 \end{listing}
 
-\begin{listing}[p]
-    \begin{minted}
-    [
-        frame=lines,
-        framesep=2mm,
-        baselinestretch=1.2,
-        bgcolor=LightGray,
-        fontsize=\footnotesize,
-        linenos,
-        breaklines
-    ]{csharp}
-public static class Utils {
-    public static void CleanUp(bool deleteGeopoliticalData = false) {
-        List<string> toDelete = new string[] {
-            "progress_maps_locations",
-            "users_friendships",
-            "users_friendship_requests",
-            "users_groups",
-            "posts_images",
-            "posts",
-            "groups",
-            "password_reset_tokens",
-            "users",
-            "images",
-            "progress_maps",
-        }.ToList();
-        if (deleteGeopoliticalData) {
-            toDelete.Add("geopolitical_location");
-        }
-        ConnectionWrapper.Instance.Use(string.Join(" ", toDelete.Select(x => $"DELETE FROM {x};")), stmt => stmt.ExecuteNonQueryAsync()).Wait();
-    }
-}
-    \end{minted}
-    \caption{CleanUp-metode i DataAccessTests.Utils\label{fig:cleanup}}
-\end{listing}
+%\begin{listing}[p]
+%    \begin{minted}
+%    [
+%        frame=lines,
+%        framesep=2mm,
+%        baselinestretch=1.2,
+%        bgcolor=LightGray,
+%        fontsize=\footnotesize,
+%        linenos,
+%        breaklines
+%    ]{csharp}
+%public static class Utils {
+%    public static void CleanUp(bool deleteGeopoliticalData = false) {
+%        List<string> toDelete = new string[] {
+%            "progress_maps_locations",
+%            "users_friendships",
+%            "users_friendship_requests",
+%            "users_groups",
+%            "posts_images",
+%            "posts",
+%            "groups",
+%            "password_reset_tokens",
+%            "users",
+%            "images",
+%            "progress_maps",
+%        }.ToList();
+%        if (deleteGeopoliticalData) {
+%            toDelete.Add("geopolitical_location");
+%        }
+%        ConnectionWrapper.Instance.Use(string.Join(" ", toDelete.Select(x => %$"DELETE FROM {x};")), stmt => stmt.ExecuteNonQueryAsync()).Wait();
+%    }
+%}
+%    \end{minted}
+%    \caption{CleanUp-metode i DataAccessTests.Utils\label{fig:cleanup}}
+%\end{listing}
 
 \begin{listing}[h]
     \begin{minted}
@@ -467,7 +434,7 @@ Vores tests følger primært AAA-mønstret, hvori enhver givet test har tre trin
 \end{itemize}
 Kodeliste \ref{fig:daoPostTest} viser et eksempel på en test. Denne metode tester, hvorvidt en post bliver tilføjet til databasen. I arrange-fasen bliver en bruger oprettet i databasen, idet en post skal have en associeret bruger. Dernæst, i act-fasen, bliver en post tilføjet til databasen. Til sidst, i assert-fasen, tjekkes det, om posten er blevet tilføjet til databasen. Det bør her noteres at posten ikke bliver hentet igen \textit{fra} databasen. Dette er nemlig forbeholdt andre tests.
 
-Det fulde testsuite kan ses i figur \ref{fig:testresults}. Individuelle tests bliver ikke vist, fordi der er 52 af dem. I stedet bliver hver \textit{test fixture} vist, som er NUnits terminologi for en testklasse. Nogle af disse testklasser har underklasser, som vises med et '+'-tegn på billedet. Metoderne er navngivet efter en konvention om, at de skal være sætninger, der forklarer, hvad den forventede opførsel er. Før hver test, samt efter sidste test i hver testklasse i DAO-laget, kaldes en statisk metode, der sørger for, at alle relevante tabeller i databasen har fået deres rækker slettet. På den måde sørger vi for, at databasen er i samme tilstand i hver test, og at tests ikke har indflydelse på hindanden. Kodeliste \ref{fig:setupAndTearDown} viser et eksempel på, hvordan metoden bliver brugt, og kodeliste \ref{fig:cleanup} viser selve metoden. Metoden tager et boolsk argument, som bestemmer hvorvidt geopolitisk data skal slettes og genindsættes fra backup. Årsagen er, at det er en meget tidskrævende process, og derfor bør det kun gøres i tests, der har med denne slags data at gøre.
+Det fulde testsuite kan ses i figur \ref{fig:testresults}. Individuelle tests bliver ikke vist, fordi der er 52 af dem. I stedet bliver hver \textit{test fixture} vist, som er NUnits terminologi for en testklasse. Nogle af disse testklasser har underklasser, som vises med et '+'-tegn på billedet. Metoderne er navngivet efter en konvention om, at de skal være sætninger, der forklarer, hvad den forventede opførsel er. Før hver test, samt efter sidste test i hver testklasse i DAO-laget, kaldes en statisk metode, der sørger for, at alle relevante tabeller i databasen har fået deres rækker slettet. På den måde sørger vi for, at databasen er i samme tilstand i hver test, og at tests ikke har indflydelse på hindanden. Kodeliste \ref{fig:setupAndTearDown} viser et eksempel på, hvordan metoden bliver brugt, og af implementationen af selve metoden kan ses i \texttt{QWest.DataAccess.Tests.Utils}. Metoden tager et boolsk argument, som bestemmer hvorvidt geopolitisk data skal slettes og genindsættes fra backup. Årsagen er, at det er en meget tidskrævende process, og derfor bør det kun gøres i tests, der har med denne slags data at gøre.
 
 I enkelte tilfælde er der også gjort brug af NUnits \texttt{TestCase}-annotation. Et eksempel på dette kan ses i kodeliste \ref{fig:testCaseUsage}. Med denne annotation kan man give sin testmetode en parameterliste. NUnits testkører kan dermed parsere argumenter til testmetoden ved hjælp af \texttt{TestCase}-annotationen, så man dermed kan køre sin test med forskellige argumenter uden at skulle skrive flere forskellige tests, der gør næsten det samme.
 
